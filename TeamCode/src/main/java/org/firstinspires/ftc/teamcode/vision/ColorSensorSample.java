@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @TeleOp
 @Disabled
 public class ColorSensorSample extends CommandOpMode {
-    public static double GAIN = 1;
+    public static double GAIN = 50;
     public static boolean ENABLE_COLOR_PREVIEW = true;
 
     private RevColorSensorV3 colorSensor;
@@ -34,7 +34,7 @@ public class ColorSensorSample extends CommandOpMode {
 
     public void initialize() {
         hubs = hardwareMap.getAll(LynxModule.class);
-        colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
+        colorSensor = hardwareMap.get(RevColorSensorV3.class, "distance_wall");
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.setMsTransmissionInterval(25);
 

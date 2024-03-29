@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.roadrunner.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -38,8 +39,8 @@ import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
  *
  * Uncomment the @Disabled tag below to use this opmode.
  */
-//@Disabled
 @Config
+@Disabled
 @TeleOp(group = "drive")
 public class MotorDirectionDebugger extends LinearOpMode {
     public static double MOTOR_POWER = 0.7;
@@ -50,23 +51,22 @@ public class MotorDirectionDebugger extends LinearOpMode {
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        telemetry.addLine("Press play to begin the debugging opmode");
+        telemetry.addLine("Press play to begin the debugging OpMode");
         telemetry.update();
 
         waitForStart();
         if (isStopRequested()) return;
 
         telemetry.clearAll();
-        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
         while (!isStopRequested()) {
             telemetry.addLine("Press each button to turn on its respective motor");
             telemetry.addLine();
-            telemetry.addLine("<font face=\"monospace\">Xbox/PS4 Button - Motor</font>");
-            telemetry.addLine("<font face=\"monospace\">&nbsp;&nbsp;X / ▢&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Front Left</font>");
-            telemetry.addLine("<font face=\"monospace\">&nbsp;&nbsp;Y / Δ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Front Right</font>");
-            telemetry.addLine("<font face=\"monospace\">&nbsp;&nbsp;B / O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Rear&nbsp;&nbsp;Right</font>");
-            telemetry.addLine("<font face=\"monospace\">&nbsp;&nbsp;A / X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Rear&nbsp;&nbsp;Left</font>");
+            telemetry.addLine("Xbox/PS4 Button - Motor");
+            telemetry.addLine("X / ▢ - Front Left");
+            telemetry.addLine("Y / Δ - Front Right");
+            telemetry.addLine("B / O - Rear Right");
+            telemetry.addLine("A / X - Rear Left");
             telemetry.addLine();
 
             if(gamepad1.x) {
