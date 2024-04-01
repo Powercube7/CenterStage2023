@@ -136,8 +136,8 @@ public class TeleOp extends CommandOpMode {
      */
     @Override
     public void run() {
-        super.run();
         hubs.forEach(LynxModule::clearBulkCache);
+        super.run();
 
         // Stop here if already initialized
         if (intake != null)

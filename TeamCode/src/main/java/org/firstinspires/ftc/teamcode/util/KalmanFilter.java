@@ -51,6 +51,4 @@ public class KalmanFilter {
         Q = process;
         R = sensor;
     }
-
-
 }

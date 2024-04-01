@@ -146,6 +146,18 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
         }
     }
 
+    public void setX(double x) {
+        setPoseEstimate(new Pose2d(x, poseEstimate.getY(), poseEstimate.getHeading()));
+    }
+
+    public void setY(double y) {
+        setPoseEstimate(new Pose2d(poseEstimate.getX(), y, poseEstimate.getHeading()));
+    }
+
+    public void setHeading(double theta) {
+        setPoseEstimate(new Pose2d(poseEstimate.vec(), theta));
+    }
+
     @Nullable
     @Override
     public Pose2d getPoseVelocity() {

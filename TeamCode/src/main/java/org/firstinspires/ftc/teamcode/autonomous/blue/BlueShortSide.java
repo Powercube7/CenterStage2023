@@ -12,6 +12,7 @@ import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -46,6 +47,8 @@ public class BlueShortSide extends CommandOpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
         PathGenerator generator = new PathGenerator(drive);
+        RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
+        colorSensor.initialize();
 
         OdometrySubsystem odometry = new OdometrySubsystem(this);
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
@@ -189,9 +192,6 @@ public class BlueShortSide extends CommandOpMode {
                             intake.setClampPosition(25);
                             intake.setLiftLocation(CollectorSubsystem.LiftState.STACK);
 
-                            // For TeaBorgs
-                            // intake.adjustLiftPosition(5.0);
-
                             outtake.toggleBlockers();
                             outtake.setSpikePosition(.875);
                         })
@@ -204,19 +204,12 @@ public class BlueShortSide extends CommandOpMode {
                         new InstantCommand(outtake::toggleSpike)
                 ),
                 new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackRight, true)
-//                new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackMid, true)
                         .andThen(
                                 new InstantCommand(intake::toggleClamp),
                                 new WaitCommand(500)
                         ),
-//                new ConditionalCommand(
-//                        new WaitCommand(1500),
-//                        new InstantCommand(() -> {}),
-//                        () -> location != PropLocations.RIGHT
-//                ),
                 new ParallelCommandGroup(
                         new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropRight, false),
-//                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropMid, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -248,7 +241,6 @@ public class BlueShortSide extends CommandOpMode {
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
                         ),
                 new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, true)
-//                new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoMid, true)
                         .andThen(
                                 new InstantCommand(intake::toggleClamp),
                                 new WaitCommand(500)
@@ -263,7 +255,6 @@ public class BlueShortSide extends CommandOpMode {
                                         .resetConstraints()
                                         .splineTo(new Vector2d(48.00, 60.00), Math.toRadians(0.00))
                                         .build(), false),
-//                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropMid, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -311,7 +302,6 @@ public class BlueShortSide extends CommandOpMode {
                                         )
                         ),
                         () -> location == PropLocations.RIGHT
-//                        () -> false
                 )
         ));
     }
