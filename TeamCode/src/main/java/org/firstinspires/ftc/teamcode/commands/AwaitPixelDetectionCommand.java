@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import com.arcrobotics.ftclib.command.Command;
+import android.util.Log;
+
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.arcrobotics.ftclib.command.InstantCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -10,20 +10,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class AwaitPixelDetectionCommand extends CommandBase {
 
     private final RevColorSensorV3 sensor;
-    private final Command callback, backup;
+    private final Runnable callback, backup;
 
+    /**
+     * @param sensor   Color sensor to get the distance from
+     * @param callback Action to run if a pixel is detected successfully
+     */
     public AwaitPixelDetectionCommand(RevColorSensorV3 sensor, Runnable callback) {
         this(sensor, callback, () -> {
         });
     }
 
+    /**
+     *
+     * @param sensor Color sensor to get the distance from
+     * @param callback Action to run if a pixel is detected successfully
+     * @param backup Action to run if the command is interrupted before finding a pixel
+     */
     public AwaitPixelDetectionCommand(RevColorSensorV3 sensor, Runnable callback, Runnable backup) {
-        this.sensor = sensor;
-        this.callback = new InstantCommand(callback);
-        this.backup = new InstantCommand(backup);
-    }
-
-    public AwaitPixelDetectionCommand(RevColorSensorV3 sensor, Command callback, Command backup) {
         this.sensor = sensor;
         this.callback = callback;
         this.backup = backup;
@@ -36,8 +40,12 @@ public class AwaitPixelDetectionCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        if (!interrupted)
-            callback.
-        else backup.run();
+        if (!interrupted) {
+            Log.println(Log.DEBUG, "PixelCommand", "Pixel detected successfully. Running callback...");
+            callback.run();
+        } else {
+            Log.println(Log.DEBUG, "PixelCommand", "No pixels detected. Running backup...");
+            backup.run();
+        }
     }
 }

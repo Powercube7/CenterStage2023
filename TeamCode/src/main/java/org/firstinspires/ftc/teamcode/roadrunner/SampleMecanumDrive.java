@@ -47,7 +47,8 @@ import java.util.stream.Collectors;
 public class SampleMecanumDrive extends MecanumDrive {
 
     private final TrajectorySequenceRunner trajectorySequenceRunner;
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(10, 0, 1.2);
+    public static PIDCoefficients AXIAL_PID = new PIDCoefficients(10, 0, 1.2);
+    public static PIDCoefficients LATERAL_PID = new PIDCoefficients(10, 0, 1.2);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(10, 0, 1.2);
 
     public static double LATERAL_MULTIPLIER = 1.566591041201739;
@@ -65,7 +66,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        TrajectoryFollower follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
+        TrajectoryFollower follower = new HolonomicPIDVAFollower(AXIAL_PID, LATERAL_PID, HEADING_PID,
                 new Pose2d(.5, .5, Math.toRadians(1.0)), 0.75);
 
         VoltageSensor batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -310,6 +311,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public void breakFollowing() {
         trajectorySequenceRunner.breakFollowing();
+        setMotorPowers(0, 0, 0, 0);
     }
 
     public Pose2d getLastError() {

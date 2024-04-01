@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
 import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
 import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
@@ -203,11 +205,15 @@ public class BlueShortSide extends CommandOpMode {
                         new WaitCommand(500),
                         new InstantCommand(outtake::toggleSpike)
                 ),
-                new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackRight, true)
-                        .andThen(
-                                new InstantCommand(intake::toggleClamp),
-                                new WaitCommand(500)
-                        ),
+                new ParallelRaceGroup(
+                        new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackRight, false),
+                        new AwaitPixelDetectionCommand(colorSensor,
+                                () -> {
+                                    drive.breakFollowing();
+                                    intake.toggleClamp();
+                                }, intake::toggleClamp
+                        )
+                ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
                         new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropRight, false),
                         new WaitCommand(700)
@@ -240,12 +246,15 @@ public class BlueShortSide extends CommandOpMode {
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
                         ),
-                new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, true)
-                        .andThen(
-                                new InstantCommand(intake::toggleClamp),
-                                new WaitCommand(500)
-                        ),
-
+                new ParallelRaceGroup(
+                        new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, false),
+                        new AwaitPixelDetectionCommand(colorSensor,
+                                () -> {
+                                    drive.breakFollowing();
+                                    intake.toggleClamp();
+                                }, intake::toggleClamp
+                        )
+                ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
                         new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid,
                                 drive.trajectorySequenceBuilder(stackTwoRight.end(), 50)
