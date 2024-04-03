@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.roadrunner.opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /*
  * This is an example of a more complex path to really test the tuning.
@@ -20,21 +23,35 @@ public class SplineTest extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         OdometrySubsystem odometry = new OdometrySubsystem(this);
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        Pose2d meanSquaredError = new Pose2d();
 
         waitForStart();
         if (isStopRequested()) return;
 
-        Trajectory traj = drive.trajectoryBuilder(new Pose2d())
-                .splineTo(new Vector2d(30, 30), 0)
+        TrajectorySequence traj = drive.trajectorySequenceBuilder(new Pose2d())
+                .setTangent(Math.PI / 2.0)
+                .splineToConstantHeading(new Vector2d(30, 30), 0)
+                .waitSeconds(1)
+                .setReversed(true)
+                .splineTo(new Vector2d(), Math.PI)
                 .build();
 
-        drive.followTrajectory(traj);
-        sleep(2000);
+        drive.followTrajectorySequenceAsync(traj);
+        while (opModeIsActive()) {
+            if (drive.isBusy()) {
+                drive.update();
 
-        drive.followTrajectory(
-                drive.trajectoryBuilder(traj.end(), true)
-                        .splineTo(new Vector2d(0, 0), Math.toRadians(180))
-                        .build()
-        );
+                Pose2d error = drive.getLastError();
+                meanSquaredError = meanSquaredError.plus(new Pose2d(
+                        error.getX() * error.getX(),
+                        error.getY() * error.getY(),
+                        Math.toDegrees(Angle.normDelta(error.getHeading())) * Math.toDegrees(Angle.normDelta(error.getHeading()))
+                ));
+            }
+
+            telemetry.addData("Mean Squared Error", meanSquaredError.toString());
+            telemetry.update();
+        }
     }
 }

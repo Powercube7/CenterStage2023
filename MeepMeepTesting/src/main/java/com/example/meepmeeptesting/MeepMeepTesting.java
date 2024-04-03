@@ -28,11 +28,12 @@ public class MeepMeepTesting {
                 .setColorScheme(new ColorSchemeRedDark())
                 .setConstraints(60, 60, Math.toRadians(270), Math.toRadians(225), 8.9)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(startPosition, startHeading))
-                                .setTangent(Math.toRadians(-90))
-                                .splineToConstantHeading(new Vector2d(-24, -60), Math.PI)
-                                .splineToConstantHeading(new Vector2d(-48, -45), Math.toRadians(90))
-                                .splineToConstantHeading(new Vector2d(-58.5, -36), Math.toRadians(180))
+                        drive.trajectorySequenceBuilder(new Pose2d())
+                                .setTangent(Math.PI / 2.0)
+                                .splineToConstantHeading(new Vector2d(30, 30), 0)
+                                .waitSeconds(2)
+                                .setReversed(true)
+                                .splineTo(new Vector2d(), Math.PI)
                                 .build()
                 );
 
@@ -52,7 +53,6 @@ public class MeepMeepTesting {
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(redBot)
-//                .addEntity(blueBot)
                 .start();
     }
 }

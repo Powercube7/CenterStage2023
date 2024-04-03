@@ -9,9 +9,11 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -19,6 +21,7 @@ import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
 import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
 import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
@@ -46,6 +49,8 @@ public class RedShortSide extends CommandOpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
         PathGenerator generator = new PathGenerator(drive);
+        RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
+        colorSensor.initialize();
 
         OdometrySubsystem odometry = new OdometrySubsystem(this);
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
@@ -82,8 +87,18 @@ public class RedShortSide extends CommandOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .lineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
+//        TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end())
+//                .setTangent(Math.toRadians(-90))
+//                .splineToConstantHeading(new Vector2d(-24, -60), Math.PI)
+//                .setConstraints(
+//                        SampleMecanumDrive.getVelocityConstraint(35, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+//                        SampleMecanumDrive.getAccelerationConstraint(35)
+//                )
+//                .splineToConstantHeading(new Vector2d(-48, -45), Math.toRadians(90))
+//                .splineToConstantHeading(new Vector2d(-57.25, -36), Math.toRadians(180))
+//                .build();
         TrajectorySequence stackMid = drive.trajectorySequenceBuilder(middleYellow.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.toRadians(180.00))
                 .splineTo(new Vector2d(-37.00, -60.00), Math.toRadians(180.00))
@@ -93,7 +108,7 @@ public class RedShortSide extends CommandOpMode {
                 )
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
         TrajectorySequence stackRight = drive.trajectorySequenceBuilder(rightYellow.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.toRadians(180.00))
@@ -104,7 +119,7 @@ public class RedShortSide extends CommandOpMode {
                 )
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
 
         TrajectorySequence backdropLeft = drive.trajectorySequenceBuilder(stackLeft.end(), 50)
@@ -134,7 +149,7 @@ public class RedShortSide extends CommandOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .lineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
         TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdropMid.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.toRadians(180.00))
@@ -145,7 +160,7 @@ public class RedShortSide extends CommandOpMode {
                 )
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
         TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdropRight.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.toRadians(180.00))
@@ -156,7 +171,7 @@ public class RedShortSide extends CommandOpMode {
                 )
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(-52.00, -36.75, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-58.15, -36.75, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-57.25, -36.75, Math.toRadians(180)))
                 .build();
 
         while (!isStarted()) {
@@ -200,17 +215,15 @@ public class RedShortSide extends CommandOpMode {
                         new WaitCommand(500),
                         new InstantCommand(outtake::toggleSpike)
                 ),
-                new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackRight, true)
-                        .andThen(
-                                new InstantCommand(intake::toggleClamp),
-                                new WaitCommand(500)
-                        ),
-                new ConditionalCommand(
-                        new WaitCommand(1500), // TehnoZ wait
-                        new InstantCommand(() -> {
-                        }),
-                        () -> location != PropLocations.LEFT
-                ),
+                new ParallelRaceGroup(
+                        new RunByCaseCommand(location.toString(), drive, stackLeft, stackMid, stackRight, false),
+                        new AwaitPixelDetectionCommand(colorSensor,
+                                () -> {
+                                    drive.breakFollowing();
+                                    intake.toggleClamp();
+                                }, intake::toggleClamp
+                        )
+                ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
                         new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropRight, false),
                         new WaitCommand(700)
@@ -243,11 +256,15 @@ public class RedShortSide extends CommandOpMode {
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
                         ),
-                new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, true)
-                        .andThen(
-                                new InstantCommand(intake::toggleClamp),
-                                new WaitCommand(500)
-                        ),
+                new ParallelRaceGroup(
+                        new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, false),
+                        new AwaitPixelDetectionCommand(colorSensor,
+                                () -> {
+                                    drive.breakFollowing();
+                                    intake.toggleClamp();
+                                }, intake::toggleClamp
+                        )
+                ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
                         new RunByCaseCommand(location.toString(), drive,
                                 drive.trajectorySequenceBuilder(stackTwoLeft.end(), 50)
@@ -270,7 +287,7 @@ public class RedShortSide extends CommandOpMode {
                                 }),
                                 new InstantCommand(() -> {
                                     if (location != PropLocations.LEFT)
-                                        outtake.setSlidesTicks(400);
+                                        outtake.setSlidesTicks(300);
                                 })
                         )
                 ),

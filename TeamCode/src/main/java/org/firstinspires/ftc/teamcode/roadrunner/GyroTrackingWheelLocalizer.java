@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 
 abstract class GyroTrackingWheelLocalizer implements Localizer {
 
-    private double gyroConfidence = .75;
+    private double gyroConfidence = 1;
 
     private final DecompositionSolver forwardSolver;
     private final CompFilter filter = new CompFilter();
