@@ -49,7 +49,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private final TrajectorySequenceRunner trajectorySequenceRunner;
     public static PIDCoefficients AXIAL_PID = new PIDCoefficients(10, 0, 1.2);
     public static PIDCoefficients LATERAL_PID = new PIDCoefficients(10, 0, 1.2);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(10, 0, 1.2);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(10, 0, 2);
 
     public static double LATERAL_MULTIPLIER = 1.566591041201739;
 

@@ -23,16 +23,20 @@ public class DashboardPose {
     public DashboardPose(Pose2d pose) {
         x = pose.getX();
         y = pose.getY();
-        theta = pose.getHeading();
+        theta = Math.toDegrees(pose.getHeading());
     }
 
     public static DashboardPose polar(double r, double theta) {
-        Vector2d vec = Vector2d.polar(r, theta);
+        Vector2d vec = Vector2d.polar(r, Math.toRadians(theta));
         return new DashboardPose(vec.getX(), vec.getY(), theta);
     }
 
     public Pose2d toPose2d() {
-        return new Pose2d(x, y, theta);
+        return new Pose2d(x, y, Math.toRadians(theta));
+    }
+
+    public Vector2d getVec2d() {
+        return new Vector2d(x, y);
     }
 
     @NonNull

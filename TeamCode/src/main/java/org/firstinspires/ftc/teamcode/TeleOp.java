@@ -115,7 +115,12 @@ public class TeleOp extends CommandOpMode {
 
         // Safety sensor toggle
         driver2.getGamepadButton(GamepadKeys.Button.START)
-                .whenPressed(() -> sensorDisabled.set(!sensorDisabled.get()));
+                .whenPressed(() -> {
+                    sensorDisabled.set(!sensorDisabled.get());
+                    if (sensorDisabled.get())
+                        gamepad2.rumble(0.9, 0.9, 750);
+                    else gamepad2.rumble(0.9, 0.9, 250);
+                });
 
         schedule(new RunCommand(() -> {
             telemetry.addData("Blocker State", outtake.getBlockerState());
