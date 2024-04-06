@@ -38,8 +38,9 @@ import java.util.Locale;
 @Autonomous(name = "Red Short #SideGame (Stage Door)")
 public class RedShortDoorSideGame extends CommandOpMode {
 
-    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, -13.00, 180);
+    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -13.00, 180);
     public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -21.00, -30.00);
+    public static double CYCLE_SPIKE_POS = 0.825;
     private PropLocations location = PropLocations.LEFT;
     private SampleMecanumDrive drive;
 
@@ -106,7 +107,7 @@ public class RedShortDoorSideGame extends CommandOpMode {
                 .setReversed(true)
                 .splineTo(BACKDROP_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwo = drive.trajectorySequenceBuilder(BACKDROP_POSE.toPose2d(), 50)
+        TrajectorySequence stackTwo = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(STACK_POSE.toPose2d())
                 .build();
 
@@ -172,8 +173,9 @@ public class RedShortDoorSideGame extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             intake.adjustLiftPosition(10.0);
+
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(200))
@@ -184,7 +186,7 @@ public class RedShortDoorSideGame extends CommandOpMode {
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                 new WaitCommand(300)
                         ),
                 new InstantCommand(outtake::toggleBlockers)
@@ -215,7 +217,8 @@ public class RedShortDoorSideGame extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(300))
@@ -226,7 +229,7 @@ public class RedShortDoorSideGame extends CommandOpMode {
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                 new WaitCommand(300)
                         ),
                 new InstantCommand(outtake::toggleBlockers)

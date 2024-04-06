@@ -36,7 +36,7 @@ public class TeleOp extends CommandOpMode {
 
         this.reset(); // Reset leftover auto commands
         hubs = hardwareMap.getAll(LynxModule.class);
-        AtomicBoolean sensorDisabled = new AtomicBoolean(false);
+        AtomicBoolean sensorDisabled = new AtomicBoolean(true);
         hubs.forEach(hub -> hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL));
 
         outtake = new DepositSubsystem(hardwareMap);
@@ -160,10 +160,7 @@ public class TeleOp extends CommandOpMode {
                 .and(new Trigger(() -> intake.location != CollectorSubsystem.LiftState.RAISED))
                 .and(new Trigger(() -> intake.clamping == CollectorSubsystem.ClampState.OPENED));
 
-        sensorDetection.whenActive(new SequentialCommandGroup(
-                new WaitCommand(50),
-                new InstantCommand(() -> intake.toggleClamp())
-        ));
+        sensorDetection.whenActive(() -> intake.toggleClamp());
         sensorRaise.whileActiveContinuous(new SequentialCommandGroup(
                 new InstantCommand(() -> intake.adjustLiftPosition(-5.0)),
                 new WaitCommand(100)
