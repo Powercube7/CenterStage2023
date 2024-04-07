@@ -6,6 +6,7 @@ import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.core.colorscheme.scheme.ColorSchemeBlueDark;
 import com.noahbres.meepmeep.core.colorscheme.scheme.ColorSchemeRedDark;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
+import com.noahbres.meepmeep.roadrunner.SampleMecanumDrive;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
@@ -20,20 +21,18 @@ public class MeepMeepTesting {
 
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(640, 144);
-        Vector2d startPosition = new Vector2d(48.25, -29.50);
-        double startHeading = Math.toRadians(180);
 
         RoadRunnerBotEntity redBot = new DefaultBotBuilder(meepMeep)
                 .setDimensions(13, 15.19)
                 .setColorScheme(new ColorSchemeRedDark())
                 .setConstraints(60, 60, Math.toRadians(270), Math.toRadians(225), 8.9)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d())
-                                .setTangent(Math.PI / 2.0)
-                                .splineToConstantHeading(new Vector2d(30, 30), 0)
-                                .waitSeconds(2)
+                        drive.trajectorySequenceBuilder(new Pose2d(-58.00, -36.75, Math.toRadians(180.00)))
                                 .setReversed(true)
-                                .splineTo(new Vector2d(), Math.PI)
+                                .splineTo(new Vector2d(-30.00, -60.00), Math.toRadians(0.00))
+                                .splineToSplineHeading(new Pose2d(51.50, -51.00, Math.toRadians(210)), Math.toRadians(15))
+                                .setTangent(Math.toRadians(195))
+                                .splineToSplineHeading(new Pose2d(-37.00, -60.00, Math.PI), Math.PI)
                                 .build()
                 );
 
@@ -42,10 +41,12 @@ public class MeepMeepTesting {
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setConstraints(60, 60, Math.toRadians(270), Math.toRadians(225), 8.9)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(mirrorPose(new Pose2d(startPosition, startHeading)))
-                                .splineTo(new Vector2d(18, -12), Math.toRadians(180))
-                                .waitSeconds(.25)
-                                .lineToLinearHeading(new Pose2d(-58.50, -12, Math.toRadians(180)))
+                        drive.trajectorySequenceBuilder(new Pose2d(52.50, -21.00, Math.toRadians(150)))
+                                .setTangent(Math.toRadians(165))
+                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(50, Math.toRadians(270), 8.9))
+                                .splineToSplineHeading(new Pose2d(-58.00, -13.00, Math.PI), Math.toRadians(180))
+                                .setReversed(true)
+                                .splineToSplineHeading(new Pose2d(52.50, -21.00, Math.toRadians(150)), Math.toRadians(-15))
                                 .build()
                 );
 
@@ -53,6 +54,7 @@ public class MeepMeepTesting {
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(redBot)
+//                .addEntity(blueBot)
                 .start();
     }
 }

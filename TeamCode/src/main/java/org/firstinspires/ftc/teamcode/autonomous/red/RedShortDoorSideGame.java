@@ -38,9 +38,9 @@ import java.util.Locale;
 @Autonomous(name = "Red Short #SideGame (Stage Door)")
 public class RedShortDoorSideGame extends CommandOpMode {
 
-    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -13.00, 180);
-    public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -21.00, -30.00);
-    public static double CYCLE_SPIKE_POS = 0.825;
+    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -13.50, 180.00);
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -23.00, 150.00);
+    public static double CYCLE_SPIKE_POS = 0.85, MIDDLE_OFFSET = 0.5;
     private PropLocations location = PropLocations.LEFT;
     private SampleMecanumDrive drive;
 
@@ -78,37 +78,35 @@ public class RedShortDoorSideGame extends CommandOpMode {
                 .build();
 
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -29.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -29.50, Math.PI))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -35.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -35.50, Math.PI))
                 .build();
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -42.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -42.50, Math.PI))
                 .build();
 
         TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
         TrajectorySequence stackMid = drive.trajectorySequenceBuilder(middleYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
         TrajectorySequence stackRight = drive.trajectorySequenceBuilder(rightYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
 
-        TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d(), 50)
+        TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d())
                 .setReversed(true)
-                .splineTo(BACKDROP_POSE.toPose2d())
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(-15))
                 .build();
-        TrajectorySequence stackTwo = drive.trajectorySequenceBuilder(backdrop.end(), 50)
-                .splineTo(STACK_POSE.toPose2d())
+        TrajectorySequence stackTwo = drive.trajectorySequenceBuilder(backdrop.end(), 55)
+                .setTangent(Math.toRadians(165))
+                .splineToSplineHeading(STACK_POSE.toPose2d(), Math.PI)
                 .build();
 
         while (!isStarted()) {
@@ -134,6 +132,9 @@ public class RedShortDoorSideGame extends CommandOpMode {
                 new InstantCommand(() -> {
                     intake.setLiftLocation(CollectorSubsystem.LiftState.STACK);
                     intake.adjustLiftPosition(10.0);
+
+                    if (location == PropLocations.MIDDLE)
+                        drive.setPoseEstimate(drive.getPoseEstimate().plus(new Pose2d(0, MIDDLE_OFFSET, 0)));
                 }),
                 new RunByCaseCommand(location.toString(), drive, leftPurple, middlePurple, rightPurple, true),
                 new InstantCommand(intake::toggleLiftLocation).andThen(
@@ -147,7 +148,6 @@ public class RedShortDoorSideGame extends CommandOpMode {
                 ),
                 new RunByCaseCommand(location.toString(), drive, leftYellow, middleYellow, rightYellow, true),
                 new InstantCommand(outtake::toggleBlockers).andThen(
-                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleBlockers),
                         new WaitCommand(300),
                         new InstantCommand(outtake::toggleSpike)

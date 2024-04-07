@@ -5,11 +5,14 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 import java.util.Locale;
 
 public class DashboardPose {
 
     public double x, y, theta;
+    public AngleUnit angleUnit = AngleUnit.DEGREES;
 
     public DashboardPose() {
     }
@@ -23,20 +26,26 @@ public class DashboardPose {
     public DashboardPose(Pose2d pose) {
         x = pose.getX();
         y = pose.getY();
-        theta = Math.toDegrees(pose.getHeading());
-    }
-
-    public static DashboardPose polar(double r, double theta) {
-        Vector2d vec = Vector2d.polar(r, Math.toRadians(theta));
-        return new DashboardPose(vec.getX(), vec.getY(), theta);
+        theta = angleUnit.fromRadians(pose.getHeading());
     }
 
     public Pose2d toPose2d() {
-        return new Pose2d(x, y, Math.toRadians(theta));
+        return new Pose2d(x, y, angleUnit.toRadians(theta));
     }
 
-    public Vector2d getVec2d() {
+    public Vector2d vec() {
         return new Vector2d(x, y);
+    }
+
+    public double heading(AngleUnit unit) {
+        return unit.fromUnit(angleUnit, theta);
+    }
+
+    public DashboardPose mirrored() {
+        DashboardPose newPose = new DashboardPose(x, -y, -theta);
+        newPose.angleUnit = angleUnit;
+
+        return newPose;
     }
 
     @NonNull

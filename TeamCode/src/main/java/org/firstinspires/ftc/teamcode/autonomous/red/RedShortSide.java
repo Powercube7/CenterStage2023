@@ -38,7 +38,9 @@ import java.util.Locale;
 @Config
 @Autonomous(name = "Red Short (Side)")
 public class RedShortSide extends CommandOpMode {
-    public DashboardPose STACK_POSE = new DashboardPose(-58.00, -36.75, 180);
+    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -36.75, 180);
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -52.50, 210);
+    public static double CYCLE_SPIKE_POS = 0.85;
     private PropLocations location = PropLocations.LEFT;
     private SampleMecanumDrive drive;
 
@@ -116,26 +118,13 @@ public class RedShortSide extends CommandOpMode {
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
 
-        TrajectorySequence backdropLeft = drive.trajectorySequenceBuilder(stackLeft.end(), 50)
+        TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d(), 50)
                 .setReversed(true)
-                .splineTo(new Vector2d(-24.00, -60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, -60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.00, -42.50), Math.toRadians(0.00))
-                .build();
-        TrajectorySequence backdropMid = drive.trajectorySequenceBuilder(stackMid.end(), 50)
-                .setReversed(true)
-                .splineTo(new Vector2d(-24.00, -60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, -60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.00, -42.50), Math.toRadians(0.00))
-                .build();
-        TrajectorySequence backdropRight = drive.trajectorySequenceBuilder(stackLeft.end(), 50)
-                .setReversed(true)
-                .splineTo(new Vector2d(-24.00, -60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, -60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.00, -42.50), Math.toRadians(0.00))
+                .splineTo(new Vector2d(-30.00, -60.00), Math.toRadians(0.00))
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(15))
                 .build();
 
-        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdropLeft.end(), 50)
+        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -145,7 +134,7 @@ public class RedShortSide extends CommandOpMode {
                 .lineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI))
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdropMid.end(), 50)
+        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -156,7 +145,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdropRight.end(), 50)
+        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -219,7 +208,7 @@ public class RedShortSide extends CommandOpMode {
                         )
                 ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropRight, false),
+                        new RunByCaseCommand(location.toString(), drive, backdrop, backdrop, backdrop, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -229,8 +218,9 @@ public class RedShortSide extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             intake.adjustLiftPosition(10.0);
+
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(200))
@@ -241,7 +231,7 @@ public class RedShortSide extends CommandOpMode {
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                 new WaitCommand(300)
                         ),
                 new InstantCommand(outtake::toggleBlockers)
@@ -268,7 +258,7 @@ public class RedShortSide extends CommandOpMode {
                                         .resetConstraints()
                                         .splineTo(new Vector2d(48.00, -60.00), Math.toRadians(0.00))
                                         .build(),
-                                backdropMid, backdropRight, false),
+                                backdrop, backdrop, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -278,7 +268,8 @@ public class RedShortSide extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new InstantCommand(() -> {
                                             if (location != PropLocations.LEFT)
@@ -300,10 +291,10 @@ public class RedShortSide extends CommandOpMode {
                         new SequentialCommandGroup(
                                 new InstantCommand(outtake::toggleBlockers)
                                         .andThen(
-                                                new WaitCommand(500),
-                                                new InstantCommand(outtake::toggleSpike),
                                                 new WaitCommand(300),
                                                 new InstantCommand(outtake::toggleSpike),
+                                                new WaitCommand(300),
+                                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                                 new WaitCommand(300)
                                         ),
                                 new InstantCommand(outtake::toggleBlockers)
