@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -312,6 +313,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void breakFollowing() {
         trajectorySequenceRunner.breakFollowing();
         setMotorPowers(0, 0, 0, 0);
+    }
+
+    public void setPoseEstimate(RobotLocation location) {
+        setPoseEstimate(location.getStartingPose());
     }
 
     public Pose2d getLastError() {

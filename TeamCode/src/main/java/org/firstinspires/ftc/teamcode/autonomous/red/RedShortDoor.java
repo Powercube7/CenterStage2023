@@ -1,45 +1,48 @@
 package org.firstinspires.ftc.teamcode.autonomous.red;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
+import com.arcrobotics.ftclib.command.RunCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
-import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
-import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
 import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.TensorflowSubsystem;
-import org.firstinspires.ftc.teamcode.roadrunner.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.DashboardPose;
+import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 
 import java.util.Locale;
 
-//@Config
-@Disabled
+@Config
 @Autonomous(name = "Red Short (Stage Door)")
 public class RedShortDoor extends CommandOpMode {
 
-    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, -13.00, 180);
+    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -13.50, 180.00);
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -23.00, 150.00);
+    public static double CYCLE_SPIKE_POS = 0.85, MIDDLE_OFFSET = 0.5;
     private PropLocations location = PropLocations.LEFT;
     private SampleMecanumDrive drive;
 
@@ -53,7 +56,6 @@ public class RedShortDoor extends CommandOpMode {
         telemetry.update();
 
         drive = new SampleMecanumDrive(hardwareMap);
-        PathGenerator generator = new PathGenerator(drive);
         RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
         colorSensor.initialize();
 
@@ -61,81 +63,51 @@ public class RedShortDoor extends CommandOpMode {
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
 
-        generator.setStartingLocation(AllianceColor.RED, StartingPosition.BACKDROP);
+        drive.setPoseEstimate(RobotLocation.RED_SHORT);
         tensorflow.setMinConfidence(0.8);
 
-        Trajectory middlePurple = drive.trajectoryBuilder(generator.getStartingPose())
+        Trajectory middlePurple = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(15, -38), Math.toRadians(90.00))
                 .build();
-        Trajectory leftPurple = drive.trajectoryBuilder(generator.getStartingPose())
+        Trajectory leftPurple = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(.5, -33)
                         .minus(Vector2d.polar(12, Math.toRadians(135))), Math.toRadians(135.00))
                 .build();
-        Trajectory rightPurple = drive.trajectoryBuilder(generator.getStartingPose())
+        Trajectory rightPurple = drive.trajectoryBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(23.5, -32)
                         .minus(Vector2d.polar(13, Math.toRadians(60))), Math.toRadians(60.00))
                 .build();
 
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -29.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -29.50, Math.PI))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -35.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -35.50, Math.PI))
                 .build();
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, -42.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, -42.50, Math.PI))
                 .build();
 
         TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
         TrajectorySequence stackMid = drive.trajectorySequenceBuilder(middleYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
         TrajectorySequence stackRight = drive.trajectorySequenceBuilder(rightYellow.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
+                .splineTo(new Vector2d(18, STACK_POSE.y), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
 
-        TrajectorySequence backdropLeft = drive.trajectorySequenceBuilder(stackLeft.end())
+        TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d())
                 .setReversed(true)
-                .splineTo(new Pose2d(24, STACK_POSE.y, Math.toRadians(0.00)))
-                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
-                .splineTo(new Vector2d(50.00, -30.50), Math.toRadians(0.00))
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(-15))
                 .build();
-        TrajectorySequence backdropMiddle = drive.trajectorySequenceBuilder(stackMid.end())
-                .setReversed(true)
-                .splineTo(new Pose2d(24, STACK_POSE.y, Math.toRadians(0.00)))
-                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
-                .splineTo(new Vector2d(50.00, -30.50), Math.toRadians(0.00))
-                .build();
-        TrajectorySequence backdropRight = drive.trajectorySequenceBuilder(stackRight.end())
-                .setReversed(true)
-                .splineTo(new Pose2d(24, STACK_POSE.y, Math.toRadians(0.00)))
-                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
-                .splineTo(new Vector2d(50.00, -30.50), Math.toRadians(0.00))
-                .build();
-
-        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdropLeft.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
-                .lineToLinearHeading(STACK_POSE.toPose2d())
-                .build();
-
-        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdropMiddle.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
-                .lineToLinearHeading(STACK_POSE.toPose2d())
-                .build();
-        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdropRight.end(), 50)
-                .splineTo(new Vector2d(18, STACK_POSE.y), Math.toRadians(180))
-                .waitSeconds(.25)
-                .lineToLinearHeading(STACK_POSE.toPose2d())
+        TrajectorySequence stackCycle = drive.trajectorySequenceBuilder(backdrop.end(), 55)
+                .setTangent(Math.toRadians(165))
+                .splineToSplineHeading(STACK_POSE.toPose2d(), Math.PI)
                 .build();
 
         while (!isStarted()) {
@@ -161,6 +133,9 @@ public class RedShortDoor extends CommandOpMode {
                 new InstantCommand(() -> {
                     intake.setLiftLocation(CollectorSubsystem.LiftState.STACK);
                     intake.adjustLiftPosition(10.0);
+
+                    if (location == PropLocations.MIDDLE)
+                        drive.setPoseEstimate(drive.getPoseEstimate().plus(new Pose2d(0, MIDDLE_OFFSET, 0)));
                 }),
                 new RunByCaseCommand(location.toString(), drive, leftPurple, middlePurple, rightPurple, true),
                 new InstantCommand(intake::toggleLiftLocation).andThen(
@@ -174,7 +149,6 @@ public class RedShortDoor extends CommandOpMode {
                 ),
                 new RunByCaseCommand(location.toString(), drive, leftYellow, middleYellow, rightYellow, true),
                 new InstantCommand(outtake::toggleBlockers).andThen(
-                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleBlockers),
                         new WaitCommand(300),
                         new InstantCommand(outtake::toggleSpike)
@@ -188,8 +162,9 @@ public class RedShortDoor extends CommandOpMode {
                                 }, intake::toggleClamp
                         )
                 ).andThen(new WaitCommand(250)),
+                new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdrop)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMiddle, backdropRight, false),
+                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -199,8 +174,9 @@ public class RedShortDoor extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             intake.adjustLiftPosition(10.0);
+
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(200))
@@ -211,7 +187,7 @@ public class RedShortDoor extends CommandOpMode {
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                 new WaitCommand(300)
                         ),
                 new InstantCommand(outtake::toggleBlockers)
@@ -220,8 +196,9 @@ public class RedShortDoor extends CommandOpMode {
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
                         ),
+                new InstantCommand(() -> drive.followTrajectorySequenceAsync(stackCycle)),
                 new ParallelRaceGroup(
-                        new RunByCaseCommand(location.toString(), drive, stackTwoLeft, stackTwoMid, stackTwoRight, false),
+                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
                         new AwaitPixelDetectionCommand(colorSensor,
                                 () -> {
                                     drive.breakFollowing();
@@ -229,8 +206,9 @@ public class RedShortDoor extends CommandOpMode {
                                 }, intake::toggleClamp
                         )
                 ).andThen(new WaitCommand(250)),
+                new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdrop)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMiddle, backdropRight, false),
+                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -240,7 +218,8 @@ public class RedShortDoor extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
                                         new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(300))
@@ -251,11 +230,51 @@ public class RedShortDoor extends CommandOpMode {
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
                                 new WaitCommand(300)
                         ),
                 new InstantCommand(outtake::toggleBlockers)
                         .andThen(
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSlidesPosition(0))
+                        ),
+                new InstantCommand(() -> drive.followTrajectorySequenceAsync(stackCycle)),
+                new ParallelRaceGroup(
+                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
+                        new FixedSequentialCommandGroup(
+                                new WaitUntilCommand(() -> drive.getPoseEstimate().getX() < -36),
+                                new InstantCommand(() -> intake.adjustLiftPosition(20.0)),
+                                new AwaitPixelDetectionCommand(colorSensor,
+                                        () -> {
+                                            drive.breakFollowing();
+                                            intake.toggleClamp();
+                                        }, intake::toggleClamp
+                                )
+                        )
+                ).andThen(new WaitCommand(250)),
+                new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdrop)),
+                new ParallelCommandGroup(
+                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
+                        new WaitCommand(700)
+                                .andThen(new InstantCommand(intake::toggleClamp)),
+                        new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
+                                .andThen(
+                                        new InstantCommand(() -> intake.setLiftLocation(CollectorSubsystem.LiftState.STACK)),
+                                        new WaitCommand(300),
+                                        new InstantCommand(() -> {
+                                            intake.setClampPosition(25);
+                                            outtake.toggleBlockers();
+
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
+                                        }),
+                                        new WaitCommand(300),
+                                        new InstantCommand(() -> outtake.setSlidesTicks(500))
+                                )
+                ),
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
+                                new InstantCommand(outtake::toggleBlockers),
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
@@ -265,7 +284,13 @@ public class RedShortDoor extends CommandOpMode {
 
     @Override
     public void run() {
-        super.run();
+        try {
+            super.run();
+        } catch (Exception e) {
+            Log.println(Log.ERROR, "AutonomousError", e.toString());
+            CommandScheduler.getInstance().reset();
+            terminateOpModeNow();
+        }
 
         if (!drive.isBusy())
             drive.updatePoseEstimate();

@@ -17,10 +17,8 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
-import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
-import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
 import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
@@ -48,7 +46,6 @@ public class BlueShortSide extends CommandOpMode {
         telemetry.update();
 
         drive = new SampleMecanumDrive(hardwareMap);
-        PathGenerator generator = new PathGenerator(drive);
         RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
         colorSensor.initialize();
 
@@ -56,16 +53,16 @@ public class BlueShortSide extends CommandOpMode {
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
 
-        generator.setStartingLocation(AllianceColor.BLUE, StartingPosition.BACKDROP);
+        drive.setPoseEstimate(RobotLocation.BLUE_SHORT);
         tensorflow.setMinConfidence(0.8);
 
-        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(.5, 33).minus(Vector2d.polar(12, Math.toRadians(-135))), Math.toRadians(-135))
                 .build();
-        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(15, 38), Math.toRadians(-90))
                 .build();
-        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(23.5, 32).minus(Vector2d.polar(13, Math.toRadians(-60))), Math.toRadians(-60))
                 .build();
 

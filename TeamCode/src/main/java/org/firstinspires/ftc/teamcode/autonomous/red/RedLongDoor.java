@@ -17,10 +17,8 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
-import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
-import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
 import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
@@ -41,9 +39,10 @@ public class RedLongDoor extends CommandOpMode {
 
     private PropLocations location;
     private SampleMecanumDrive drive;
-    public static DashboardPose STACK_FAR = new DashboardPose(-57.25, -12.75, 180.00);
+    public static DashboardPose STACK_FAR = new DashboardPose(-58.00, -13.25, 180.00);
     public static DashboardPose STACK_CLOSE = new DashboardPose(-57.25, -35.75, 180.00);
-    public static double BACKDROP_X = 50.50;
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -23.00, 150.00);
+    public static double BACKDROP_X = 50.50, CYCLE_SPIKE_POS = 0.85;
 
     @Override
     public void initialize() {
@@ -56,7 +55,6 @@ public class RedLongDoor extends CommandOpMode {
         telemetry.update();
 
         drive = new SampleMecanumDrive(hardwareMap);
-        PathGenerator generator = new PathGenerator(drive);
         RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
         colorSensor.initialize();
 
@@ -64,18 +62,18 @@ public class RedLongDoor extends CommandOpMode {
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
 
-        generator.setStartingLocation(AllianceColor.RED, StartingPosition.AUDIENCE);
+        drive.setPoseEstimate(RobotLocation.RED_LONG);
         tensorflow.setMinConfidence(0.8);
 
-        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineToSplineHeading(new Pose2d(
                         new Vector2d(-47.5, -31).minus(Vector2d.polar(13.5, Math.PI)),
                         Math.PI), Math.toRadians(90.00))
                 .build();
-        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(-39.00, -38.00), Math.toRadians(90.00))
                 .build();
-        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(-24.5, -33)
                         .minus(Vector2d.polar(12.5, Math.toRadians(30))), Math.toRadians(30.00))
                 .build();

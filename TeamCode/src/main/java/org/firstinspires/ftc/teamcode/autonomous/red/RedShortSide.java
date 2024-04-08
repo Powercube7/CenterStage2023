@@ -18,10 +18,8 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.autonomous.PathGenerator;
-import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
-import org.firstinspires.ftc.teamcode.autonomous.assets.StartingPosition;
+import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
 import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
@@ -39,8 +37,8 @@ import java.util.Locale;
 @Autonomous(name = "Red Short (Side)")
 public class RedShortSide extends CommandOpMode {
     public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -36.75, 180);
-    public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -52.50, 210);
-    public static double CYCLE_SPIKE_POS = 0.85;
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -52.50, 210);
+    public static double CYCLE_SPIKE_POS = 0.875;
     private PropLocations location = PropLocations.LEFT;
     private SampleMecanumDrive drive;
 
@@ -54,7 +52,6 @@ public class RedShortSide extends CommandOpMode {
         telemetry.update();
 
         drive = new SampleMecanumDrive(hardwareMap);
-        PathGenerator generator = new PathGenerator(drive);
         RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
         colorSensor.initialize();
 
@@ -62,27 +59,27 @@ public class RedShortSide extends CommandOpMode {
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
 
-        generator.setStartingLocation(AllianceColor.RED, StartingPosition.BACKDROP);
+        drive.setPoseEstimate(RobotLocation.RED_SHORT);
         tensorflow.setMinConfidence(0.8);
 
-        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence leftPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(.5, -33).minus(Vector2d.polar(12, Math.toRadians(135))), Math.toRadians(135))
                 .build();
-        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence middlePurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(15, -38), Math.toRadians(90.00))
                 .build();
-        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(generator.getStartingPose())
+        TrajectorySequence rightPurple = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .splineTo(new Vector2d(23.5, -32).minus(Vector2d.polar(13, Math.toRadians(60))), Math.toRadians(60))
                 .build();
 
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, -29.50, Math.PI))
+                .lineToLinearHeading(new Pose2d(48.5, -29.50, Math.PI))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, -35.50, Math.PI))
+                .lineToLinearHeading(new Pose2d(48.5, -35.50, Math.PI))
                 .build();
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, -42.50, Math.PI))
+                .lineToLinearHeading(new Pose2d(48.5, -42.50, Math.PI))
                 .build();
 
         TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)
@@ -100,7 +97,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .setTangent(Math.toRadians(90.00))
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
@@ -111,7 +108,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .setTangent(Math.toRadians(90.00))
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
@@ -124,7 +121,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(15))
                 .build();
 
-        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end())
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -134,23 +131,23 @@ public class RedShortSide extends CommandOpMode {
                 .lineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI))
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end())
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .setTangent(Math.toRadians(90.00))
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end())
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .setTangent(Math.toRadians(90.00))
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
