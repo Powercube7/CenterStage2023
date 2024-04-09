@@ -35,7 +35,7 @@ public class FixedSequentialCommandGroup extends SequentialCommandGroup {
 
     @Override
     public boolean isFinished() {
-        finished = super.isFinished();
+        finished |= super.isFinished();
         return finished;
     }
 }

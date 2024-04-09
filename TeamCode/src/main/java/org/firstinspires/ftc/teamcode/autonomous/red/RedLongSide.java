@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.commands.subsystems.TensorflowSubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.util.DashboardPose;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,7 +35,10 @@ import java.util.stream.Collectors;
 @Autonomous(name = "Red Long (Side)", group = "Auto (Long)")
 public class RedLongSide extends CommandOpMode {
 
-    private PropLocations location;
+    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -36.75, 180);
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -52.50, 210);
+    public static double CYCLE_SPIKE_POS = 0.875;
+    private PropLocations location = PropLocations.RIGHT;
     private SampleMecanumDrive drive;
 
     @Override

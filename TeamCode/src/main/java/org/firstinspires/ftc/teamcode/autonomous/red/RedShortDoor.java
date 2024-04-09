@@ -103,10 +103,10 @@ public class RedShortDoor extends CommandOpMode {
 
         TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d())
                 .setReversed(true)
-                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(-15))
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(-20))
                 .build();
         TrajectorySequence stackCycle = drive.trajectorySequenceBuilder(backdrop.end(), 55)
-                .setTangent(Math.toRadians(165))
+                .setTangent(Math.toRadians(160))
                 .splineToSplineHeading(STACK_POSE.toPose2d(), Math.PI)
                 .build();
 
@@ -244,7 +244,7 @@ public class RedShortDoor extends CommandOpMode {
                         new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
                         new FixedSequentialCommandGroup(
                                 new WaitUntilCommand(() -> drive.getPoseEstimate().getX() < -36),
-                                new InstantCommand(() -> intake.adjustLiftPosition(20.0)),
+                                new InstantCommand(() -> intake.setLiftLocation(CollectorSubsystem.LiftState.LOWERED)),
                                 new AwaitPixelDetectionCommand(colorSensor,
                                         () -> {
                                             drive.breakFollowing();

@@ -27,12 +27,11 @@ public class MeepMeepTesting {
                 .setColorScheme(new ColorSchemeRedDark())
                 .setConstraints(60, 60, Math.toRadians(270), Math.toRadians(225), 8.9)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-58.00, -36.75, Math.toRadians(180.00)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-58.00, -13.25, Math.toRadians(180.00)))
                                 .setReversed(true)
-                                .splineTo(new Vector2d(-30.00, -60.00), Math.toRadians(0.00))
-                                .splineToSplineHeading(new Pose2d(51.50, -51.00, Math.toRadians(210)), Math.toRadians(15))
-                                .setTangent(Math.toRadians(195))
-                                .splineToSplineHeading(new Pose2d(-37.00, -60.00, Math.PI), Math.PI)
+                                .splineToSplineHeading(new Pose2d(51.50, -23.00, Math.toRadians(150.00)), Math.toRadians(-20))
+                                .setTangent(Math.toRadians(160))
+                                .splineToSplineHeading(new Pose2d(-58.00, -13.25, Math.toRadians(180.00)), Math.toRadians(180))
                                 .build()
                 );
 

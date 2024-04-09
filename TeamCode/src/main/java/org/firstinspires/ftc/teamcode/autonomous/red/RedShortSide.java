@@ -118,7 +118,7 @@ public class RedShortSide extends CommandOpMode {
         TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d(), 50)
                 .setReversed(true)
                 .splineTo(new Vector2d(-30.00, -60.00), Math.toRadians(0.00))
-                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(15))
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(20))
                 .build();
 
         TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end())
