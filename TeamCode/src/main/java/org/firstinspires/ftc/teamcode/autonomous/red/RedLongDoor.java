@@ -81,15 +81,15 @@ public class RedLongDoor extends CommandOpMode {
 
         TrajectorySequence whiteLeft = drive.trajectorySequenceBuilder(leftPurple.end(), 45)
                 .setTangent(Math.toRadians(90.00))
-                .splineToSplineHeading(new Pose2d(STACK_FAR.x + 6, STACK_FAR.y, Math.PI), Math.PI)
+                .splineToSplineHeading(STACK_FAR.toPose2d().plus(new Pose2d(6)), Math.PI)
                 .build();
         TrajectorySequence whiteMiddle = drive.trajectorySequenceBuilder(middlePurple.end(), 45)
                 .setTangent(Math.PI)
-                .splineToLinearHeading(new Pose2d(STACK_CLOSE.x + 6, STACK_CLOSE.y, Math.PI), Math.PI)
+                .splineToSplineHeading(STACK_CLOSE.toPose2d().plus(new Pose2d(6)), Math.PI)
                 .build();
         TrajectorySequence whiteRight = drive.trajectorySequenceBuilder(rightPurple.end(), 45)
                 .setTangent(Math.PI)
-                .splineToLinearHeading(new Pose2d(STACK_CLOSE.x + 6, STACK_CLOSE.y, Math.PI), Math.PI)
+                .splineToSplineHeading(STACK_CLOSE.toPose2d().plus(new Pose2d(6)), Math.PI)
                 .build();
 
         Map<PropLocations, TrajectorySequence> backdropsWhite = new HashMap<PropLocations, TrajectorySequence>() {{

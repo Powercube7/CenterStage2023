@@ -37,7 +37,7 @@ public class DashboardPose {
         return new Vector2d(x, y);
     }
 
-    public double heading(AngleUnit unit) {
+    public double getHeading(AngleUnit unit) {
         return unit.fromUnit(angleUnit, theta);
     }
 

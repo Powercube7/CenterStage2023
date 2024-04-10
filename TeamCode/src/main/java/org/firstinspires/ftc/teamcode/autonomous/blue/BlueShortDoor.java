@@ -75,13 +75,13 @@ public class BlueShortDoor extends CommandOpMode {
                 .build();
 
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.50, 29.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(49.00, 29.50, Math.toRadians(180.00)))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.50, 35.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(49.00, 35.50, Math.toRadians(180.00)))
                 .build();
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.50, 42.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(49.00, 42.50, Math.toRadians(180.00)))
                 .build();
 
         TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)

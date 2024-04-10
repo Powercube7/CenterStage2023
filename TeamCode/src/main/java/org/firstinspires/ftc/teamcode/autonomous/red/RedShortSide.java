@@ -121,7 +121,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(20))
                 .build();
 
-        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end())
+        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -131,7 +131,7 @@ public class RedShortSide extends CommandOpMode {
                 .lineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI))
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end())
+        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(
@@ -142,7 +142,7 @@ public class RedShortSide extends CommandOpMode {
                 .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
                 .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end())
+        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end(), 50)
                 .splineTo(new Vector2d(7.00, -60.00), Math.PI)
                 .splineTo(new Vector2d(-37.00, -60.00), Math.PI)
                 .setConstraints(

@@ -67,13 +67,13 @@ public class BlueShortSide extends CommandOpMode {
                 .build();
 
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, 29.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.75, 29.50, Math.toRadians(180.00)))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, 36.35, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.75, 36.35, Math.toRadians(180.00)))
                 .build();
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.25, 42.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.75, 42.50, Math.toRadians(180.00)))
                 .build();
 
         TrajectorySequence stackRight = drive.trajectorySequenceBuilder(rightYellow.end(), 50)
