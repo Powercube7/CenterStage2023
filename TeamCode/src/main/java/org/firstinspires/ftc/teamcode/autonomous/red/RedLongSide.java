@@ -90,7 +90,7 @@ public class RedLongSide extends CommandOpMode {
 
                             return drive.trajectorySequenceBuilder(endPoses.get(location), 45)
                                     .setTangent(Math.PI)
-                                    .setTurnConstraint(Math.toRadians(180), Math.toRadians(180))
+                                    .setTurnConstraint(Math.PI, Math.PI)
                                     .splineToLinearHeading(STACK_POSE.toPose2d().plus(new Pose2d(6)), Math.PI)
                                     .build();
                         }

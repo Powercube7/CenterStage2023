@@ -7,7 +7,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
@@ -190,7 +189,6 @@ public class RedShortSide extends CommandOpMode {
                 ),
                 new RunByCaseCommand(location.toString(), drive, leftYellow, middleYellow, rightYellow, true),
                 new InstantCommand(outtake::toggleBlockers).andThen(
-                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleBlockers),
                         new WaitCommand(300),
                         new InstantCommand(outtake::toggleSpike)
@@ -219,7 +217,6 @@ public class RedShortSide extends CommandOpMode {
                                             outtake.toggleBlockers();
                                             outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
-                                        new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(200))
                                 )
                 ),
@@ -247,15 +244,7 @@ public class RedShortSide extends CommandOpMode {
                         )
                 ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive,
-                                drive.trajectorySequenceBuilder(stackTwoLeft.end(), 50)
-                                        .setReversed(true)
-                                        .splineTo(new Vector2d(-24.00, -60.00), Math.toRadians(0.00))
-                                        .splineTo(new Vector2d(4.00, -60.00), Math.toRadians(0.00))
-                                        .resetConstraints()
-                                        .splineTo(new Vector2d(48.00, -60.00), Math.toRadians(0.00))
-                                        .build(),
-                                backdrop, backdrop, false),
+                        new RunByCaseCommand(location.toString(), drive, backdrop, backdrop, backdrop, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -265,46 +254,25 @@ public class RedShortSide extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             outtake.toggleBlockers();
-
                                             outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
-                                        new InstantCommand(() -> {
-                                            if (location != PropLocations.LEFT)
-                                                outtake.setSlidesTicks(300);
-                                        })
+                                        new InstantCommand(() -> outtake.setSlidesTicks(300))
                                 )
                 ),
-                new ConditionalCommand(
-                        new InstantCommand(() -> {
-                            outtake.toggleBlockers();
-                            outtake.toggleBlockers();
-                        }).andThen(
-                                new WaitCommand(250),
-                                new InstantCommand(() -> {
-                                    outtake.toggleSpike();
-                                    outtake.setSlidesPosition(0);
-                                })
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new WaitCommand(300),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
+                                new WaitCommand(300)
                         ),
-                        new SequentialCommandGroup(
-                                new InstantCommand(outtake::toggleBlockers)
-                                        .andThen(
-                                                new WaitCommand(300),
-                                                new InstantCommand(outtake::toggleSpike),
-                                                new WaitCommand(300),
-                                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
-                                                new WaitCommand(300)
-                                        ),
-                                new InstantCommand(outtake::toggleBlockers)
-                                        .andThen(
-                                                new WaitCommand(300),
-                                                new InstantCommand(() -> {
-                                                    outtake.toggleSpike();
-                                                    outtake.setSlidesPosition(0);
-                                                })
-                                        )
-                        ),
-                        () -> location == PropLocations.LEFT
-                )
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSlidesPosition(0))
+                        )
         ));
     }
 

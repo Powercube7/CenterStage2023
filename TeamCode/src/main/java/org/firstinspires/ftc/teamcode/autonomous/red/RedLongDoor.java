@@ -38,7 +38,7 @@ import java.util.Map;
 @Autonomous(name = "Red Long (Stage Door)", group = "Auto (Long)")
 public class RedLongDoor extends CommandOpMode {
 
-    private PropLocations location;
+    private PropLocations location = PropLocations.RIGHT;
     private SampleMecanumDrive drive;
     public static DashboardPose STACK_FAR = new DashboardPose(-57.75, -13.75, 180.00);
     public static DashboardPose STACK_CLOSE = new DashboardPose(-57.75, -36.00, 180.00);
@@ -108,11 +108,11 @@ public class RedLongDoor extends CommandOpMode {
                             .build()
             );
             put(PropLocations.RIGHT,
-                    drive.trajectorySequenceBuilder(STACK_CLOSE.toPose2d(), 55)
+                    drive.trajectorySequenceBuilder(STACK_CLOSE.toPose2d(), 50)
                             .setReversed(true)
                             .splineTo(new Vector2d(-24, STACK_FAR.y), 0.00)
                             .splineTo(new Vector2d(24, STACK_FAR.y), 0.00)
-                            .splineTo(new Vector2d(BACKDROP_WHITE_X - 1, -31.00), 0.00)
+                            .splineTo(new Vector2d(BACKDROP_WHITE_X, -31.00), 0.00)
                             .build()
             );
         }};

@@ -31,10 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package org.firstinspires.ftc.robotcontroller.internal;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.ConceptNullOp;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 
 /**
  * {@link FtcOpModeRegister} is responsible for registering OpModes for use in an FTC game.
@@ -66,5 +69,20 @@ public class FtcOpModeRegister implements OpModeRegister {
         /**
          * Any manual OpMode class registrations should go here.
          */
+        OpModeMeta resetMeta = new OpModeMeta.Builder()
+                .setGroup(OpModeMeta.DefaultGroup)
+                .setName("Reset Slides Encoder")
+                .setFlavor(OpModeMeta.Flavor.TELEOP)
+                .build();
+
+        manager.register(resetMeta, new LinearOpMode() {
+            @Override
+            public void runOpMode() {
+                waitForStart();
+
+                DcMotor slides = hardwareMap.dcMotor.get("gli_sus");
+                slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            }
+        });
     }
 }

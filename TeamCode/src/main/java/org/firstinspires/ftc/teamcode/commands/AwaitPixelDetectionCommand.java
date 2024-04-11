@@ -17,8 +17,7 @@ public class AwaitPixelDetectionCommand extends CommandBase {
      * @param callback Action to run if a pixel is detected successfully
      */
     public AwaitPixelDetectionCommand(RevColorSensorV3 sensor, Runnable callback) {
-        this(sensor, callback, () -> {
-        });
+        this(sensor, callback, callback);
     }
 
     /**

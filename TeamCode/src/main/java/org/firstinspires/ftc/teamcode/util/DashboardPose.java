@@ -42,7 +42,7 @@ public class DashboardPose {
     }
 
     public DashboardPose mirrored() {
-        DashboardPose newPose = new DashboardPose(x, -y, -theta);
+        DashboardPose newPose = new DashboardPose(x, -y, angleUnit.normalize(-theta));
         newPose.angleUnit = angleUnit;
 
         return newPose;

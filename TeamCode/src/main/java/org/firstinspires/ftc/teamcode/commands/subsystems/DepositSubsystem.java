@@ -42,7 +42,10 @@ public class DepositSubsystem extends SubsystemBase {
         this.toggleSpike();
 
         this.slides.setDirection(DcMotorSimple.Direction.FORWARD);
-        this.slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.slides.setTargetPosition(0);
+        this.slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        this.slides.setPower(1.0);
     }
 
     public Spike spikeState = Spike.RAISED;

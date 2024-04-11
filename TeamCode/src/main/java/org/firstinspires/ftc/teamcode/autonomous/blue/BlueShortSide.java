@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.autonomous.blue;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
@@ -28,11 +28,16 @@ import org.firstinspires.ftc.teamcode.commands.subsystems.TensorflowSubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.util.DashboardPose;
 
 import java.util.Locale;
 
+@Config
 @Autonomous(name = "Blue Short (Side)")
 public class BlueShortSide extends CommandOpMode {
+    public static DashboardPose STACK_POSE = new DashboardPose(-56.75, -36.75, 180).mirrored();
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -52.50, 210).mirrored();
+    public static double CYCLE_SPIKE_POS = 0.875;
     private PropLocations location = PropLocations.RIGHT;
     private SampleMecanumDrive drive;
 
@@ -67,98 +72,85 @@ public class BlueShortSide extends CommandOpMode {
                 .build();
 
         Trajectory rightYellow = drive.trajectoryBuilder(rightPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, 29.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(49.00, 29.50, Math.PI))
                 .build();
         Trajectory middleYellow = drive.trajectoryBuilder(middlePurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, 36.35, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, 36.35, Math.PI))
                 .build();
         Trajectory leftYellow = drive.trajectoryBuilder(leftPurple.end())
-                .lineToLinearHeading(new Pose2d(48.75, 42.50, Math.toRadians(180.00)))
+                .lineToLinearHeading(new Pose2d(48.50, 42.50, Math.PI))
                 .build();
 
         TrajectorySequence stackRight = drive.trajectorySequenceBuilder(rightYellow.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
-                .setConstraints(
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
-                )
-                .lineToLinearHeading(new Pose2d(-52.00, 38, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
-                .build();
-        TrajectorySequence stackMid = drive.trajectorySequenceBuilder(middleYellow.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
-                .setConstraints(
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
-                )
-                .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(-50.00, 38, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
-                .build();
-        TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
-                .setConstraints(
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
-                )
-                .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(-50.00, 38, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
-                .build();
-
-        TrajectorySequence backdropRight = drive.trajectorySequenceBuilder(stackRight.end(), 50)
-                .setReversed(true)
-                .splineTo(new Vector2d(-24.00, 60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, 60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.25, 40.75), Math.toRadians(0.00))
-                .build();
-        TrajectorySequence backdropMid = drive.trajectorySequenceBuilder(stackMid.end(), 50)
-                .setReversed(true)
-                .splineTo(new Vector2d(-24.00, 60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, 60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.25, 40.75), Math.toRadians(0.00))
-                .build();
-        TrajectorySequence backdropLeft = drive.trajectorySequenceBuilder(stackLeft.end(), 50)
-                .setReversed(true)
-                .splineTo(new Vector2d(-24.00, 60.00), Math.toRadians(0.00))
-                .splineTo(new Vector2d(4.00, 60.00), Math.toRadians(0.00))
-                .splineToConstantHeading(new Vector2d(50.25, 40.75), Math.toRadians(0.00))
-                .build();
-
-        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdropRight.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(45)
                 )
-                .lineToLinearHeading(new Pose2d(-52.00, 38, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI))
+                .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdropMid.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
+        TrajectorySequence stackMid = drive.trajectorySequenceBuilder(middleYellow.end(), 50)
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
-                .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(-52.00, 38, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
+                .setTangent(Math.toRadians(-90.00))
+                .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
+                .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
-        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdropLeft.end(), 50)
-                .splineTo(new Vector2d(7.00, 60.50), Math.toRadians(180.00))
-                .splineTo(new Vector2d(-37.00, 60.50), Math.toRadians(180.00))
+        TrajectorySequence stackLeft = drive.trajectorySequenceBuilder(leftYellow.end(), 50)
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
                 .setConstraints(
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(35)
+                        SampleMecanumDrive.getAccelerationConstraint(45)
                 )
                 .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(-52.00, 38, Math.toRadians(180)), Math.toRadians(180.00))
-                .lineToLinearHeading(new Pose2d(-57.75, 38, Math.toRadians(180)))
+                .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
+                .lineToLinearHeading(STACK_POSE.toPose2d())
+                .build();
+
+        TrajectorySequence backdrop = drive.trajectorySequenceBuilder(STACK_POSE.toPose2d(), 50)
+                .setReversed(true)
+                .splineTo(new Vector2d(-30.00, 60.00), Math.toRadians(0.00))
+                .splineToSplineHeading(BACKDROP_POSE.toPose2d(), Math.toRadians(-20))
+                .build();
+
+        TrajectorySequence stackTwoLeft = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
+                .setConstraints(
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(45)
+                )
+                .lineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI))
+                .lineToLinearHeading(STACK_POSE.toPose2d())
+                .build();
+        TrajectorySequence stackTwoMid = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
+                .setConstraints(
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(45)
+                )
+                .setTangent(Math.toRadians(-90.00))
+                .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
+                .lineToLinearHeading(STACK_POSE.toPose2d())
+                .build();
+        TrajectorySequence stackTwoRight = drive.trajectorySequenceBuilder(backdrop.end(), 50)
+                .splineTo(new Vector2d(7.00, 60.00), Math.PI)
+                .splineTo(new Vector2d(-37.00, 60.00), Math.PI)
+                .setConstraints(
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(45)
+                )
+                .setTangent(Math.toRadians(-90.00))
+                .splineToLinearHeading(new Pose2d(-52.00, STACK_POSE.y, Math.PI), Math.PI)
+                .lineToLinearHeading(STACK_POSE.toPose2d())
                 .build();
 
         while (!isStarted()) {
@@ -197,9 +189,8 @@ public class BlueShortSide extends CommandOpMode {
                 ),
                 new RunByCaseCommand(location.toString(), drive, leftYellow, middleYellow, rightYellow, true),
                 new InstantCommand(outtake::toggleBlockers).andThen(
-                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleBlockers),
-                        new WaitCommand(500),
+                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleSpike)
                 ),
                 new ParallelRaceGroup(
@@ -212,7 +203,7 @@ public class BlueShortSide extends CommandOpMode {
                         )
                 ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid, backdropRight, false),
+                        new RunByCaseCommand(location.toString(), drive, backdrop, backdrop, backdrop, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -222,10 +213,10 @@ public class BlueShortSide extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             intake.adjustLiftPosition(10.0);
+
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
-                                        new WaitCommand(300),
                                         new InstantCommand(() -> outtake.setSlidesTicks(200))
                                 )
                 ),
@@ -253,14 +244,7 @@ public class BlueShortSide extends CommandOpMode {
                         )
                 ).andThen(new WaitCommand(250)),
                 new ParallelCommandGroup(
-                        new RunByCaseCommand(location.toString(), drive, backdropLeft, backdropMid,
-                                drive.trajectorySequenceBuilder(stackTwoRight.end(), 50)
-                                        .setReversed(true)
-                                        .splineTo(new Vector2d(-24.00, 60.00), Math.toRadians(0.00))
-                                        .splineTo(new Vector2d(4.00, 60.00), Math.toRadians(0.00))
-                                        .resetConstraints()
-                                        .splineTo(new Vector2d(48.00, 60.00), Math.toRadians(0.00))
-                                        .build(), false),
+                        new RunByCaseCommand(location.toString(), drive, backdrop, backdrop, backdrop, false),
                         new WaitCommand(700)
                                 .andThen(new InstantCommand(intake::toggleClamp)),
                         new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
@@ -270,45 +254,25 @@ public class BlueShortSide extends CommandOpMode {
                                         new InstantCommand(() -> {
                                             intake.setClampPosition(25);
                                             outtake.toggleBlockers();
-                                            outtake.toggleSpike();
+                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
                                         }),
-                                        new InstantCommand(() -> {
-                                            if (location != PropLocations.RIGHT)
-                                                outtake.setSlidesTicks(300);
-                                        })
+                                        new InstantCommand(() -> outtake.setSlidesTicks(400))
                                 )
                 ),
-                new ConditionalCommand(
-                        new InstantCommand(() -> {
-                            outtake.toggleBlockers();
-                            outtake.toggleBlockers();
-                        }).andThen(
-                                new WaitCommand(250),
-                                new InstantCommand(() -> {
-                                    outtake.toggleSpike();
-                                    outtake.setSlidesPosition(0);
-                                })
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new WaitCommand(300),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
+                                new WaitCommand(300)
                         ),
-                        new SequentialCommandGroup(
-                                new InstantCommand(outtake::toggleBlockers)
-                                        .andThen(
-                                                new WaitCommand(500),
-                                                new InstantCommand(outtake::toggleSpike),
-                                                new WaitCommand(300),
-                                                new InstantCommand(outtake::toggleSpike),
-                                                new WaitCommand(300)
-                                        ),
-                                new InstantCommand(outtake::toggleBlockers)
-                                        .andThen(
-                                                new WaitCommand(300),
-                                                new InstantCommand(() -> {
-                                                    outtake.toggleSpike();
-                                                    outtake.setSlidesPosition(0);
-                                                })
-                                        )
-                        ),
-                        () -> location == PropLocations.RIGHT
-                )
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new InstantCommand(() -> outtake.setSlidesPosition(0))
+                        )
         ));
     }
 

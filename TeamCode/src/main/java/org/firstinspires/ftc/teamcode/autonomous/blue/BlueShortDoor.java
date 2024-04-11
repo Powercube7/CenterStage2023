@@ -271,7 +271,14 @@ public class BlueShortDoor extends CommandOpMode {
                 ),
                 new InstantCommand(outtake::toggleBlockers)
                         .andThen(
-                                new InstantCommand(outtake::toggleBlockers),
+                                new WaitCommand(300),
+                                new InstantCommand(outtake::toggleSpike),
+                                new WaitCommand(300),
+                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
+                                new WaitCommand(300)
+                        ),
+                new InstantCommand(outtake::toggleBlockers)
+                        .andThen(
                                 new WaitCommand(300),
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
