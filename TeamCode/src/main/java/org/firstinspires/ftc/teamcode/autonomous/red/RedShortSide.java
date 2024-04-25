@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.red;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -15,6 +14,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardPose;
 
 import java.util.Locale;
 
-@Config
+@Disabled
 @Autonomous(name = "Red Short (Side)")
 public class RedShortSide extends CommandOpMode {
     public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -36.75, 180);

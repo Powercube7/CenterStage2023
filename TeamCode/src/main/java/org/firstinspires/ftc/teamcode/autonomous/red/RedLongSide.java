@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.red;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -13,8 +12,10 @@ import com.arcrobotics.ftclib.command.RunCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
+import com.arcrobotics.ftclib.util.Timing;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
@@ -34,14 +35,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Config
+@Disabled
 @Autonomous(name = "Red Long (Side)", group = "Auto (Long)")
 public class RedLongSide extends CommandOpMode {
 
-    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, -36.75, 180);
-    public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -52.50, 210);
+    public static DashboardPose STACK_POSE = new DashboardPose(-57.50, -36.50, 180);
+    public static DashboardPose BACKDROP_POSE = new DashboardPose(53.50, -52.50, 210);
+    private final Timing.Timer teammateAuto = new Timing.Timer(0, TimeUnit.SECONDS);
     public static double CYCLE_SPIKE_POS = 0.875;
     private PropLocations location = PropLocations.RIGHT;
     private SampleMecanumDrive drive;
@@ -108,7 +111,7 @@ public class RedLongSide extends CommandOpMode {
                 ));
         Map<PropLocations, Vector2d> yellowLocation = new HashMap<PropLocations, Vector2d>() {{
             put(PropLocations.LEFT, new Vector2d(50.50, -29.50));
-            put(PropLocations.MIDDLE, new Vector2d(50.50, -35.50));
+            put(PropLocations.MIDDLE, new Vector2d(50.50, -36.00));
             put(PropLocations.RIGHT, new Vector2d(50.50, -42.50));
         }};
 
@@ -202,7 +205,12 @@ public class RedLongSide extends CommandOpMode {
                                     intake.toggleClamp();
                                 }, intake::toggleClamp
                         )
-                ).andThen(new WaitCommand(250)),
+                ).andThen(
+                        new ParallelCommandGroup(
+                                new WaitUntilCommand(teammateAuto::done),
+                                new WaitCommand(250)
+                        )
+                ),
                 new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdropsWhite.get(location))),
                 new ParallelCommandGroup(
                         new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
@@ -287,5 +295,11 @@ public class RedLongSide extends CommandOpMode {
 
         if (!drive.isBusy())
             drive.updatePoseEstimate();
+    }
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        this.reset();
+        super.runOpMode();
     }
 }

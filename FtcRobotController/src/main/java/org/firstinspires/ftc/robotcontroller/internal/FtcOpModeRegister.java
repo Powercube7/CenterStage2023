@@ -65,10 +65,6 @@ public class FtcOpModeRegister implements OpModeRegister {
      * @see com.qualcomm.robotcore.eventloop.opmode.Autonomous
      */
     public void register(OpModeManager manager) {
-
-        /**
-         * Any manual OpMode class registrations should go here.
-         */
         OpModeMeta resetMeta = new OpModeMeta.Builder()
                 .setGroup(OpModeMeta.DefaultGroup)
                 .setName("Reset Slides Encoder")
@@ -84,5 +80,14 @@ public class FtcOpModeRegister implements OpModeRegister {
                 slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
         });
+    }
+
+    public static OpModeMeta getAutonomousMeta(String name) {
+        return new OpModeMeta.Builder()
+                .setName(name)
+                .setGroup("Autonomous")
+                .setSource(OpModeMeta.Source.ANDROID_STUDIO)
+                .setFlavor(OpModeMeta.Flavor.AUTONOMOUS)
+                .build();
     }
 }

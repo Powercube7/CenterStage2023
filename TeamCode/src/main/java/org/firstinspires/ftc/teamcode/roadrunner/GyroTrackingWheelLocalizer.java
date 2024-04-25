@@ -19,6 +19,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.util.CompFilter;
 
 import java.util.ArrayList;
@@ -103,7 +104,8 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
             if (gyroscope == null)
                 poseEstimate = odometryPose;
             else {
-                double gyroAngle = gyroOffset + gyroscope.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+                YawPitchRollAngles gyroAngles = gyroscope.getRobotYawPitchRollAngles();
+                double gyroAngle = gyroOffset + gyroAngles.getYaw(AngleUnit.RADIANS);
                 double odometryAngle = odometryPose.getHeading();
                 double filterAngle = filter.update(gyroAngle, odometryAngle);
 
@@ -117,6 +119,12 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
 
                 dashboard.sendTelemetryPacket(packet);
                 poseEstimate = Kinematics.relativeOdometryUpdate(poseEstimate, new Pose2d(robotPoseDelta.vec(), filter.getDelta()));
+
+//                if (MathUtilKt.epsilonEquals(gyroAngles.getYaw(AngleUnit.DEGREES), 0.0) &&
+//                        MathUtilKt.epsilonEquals(gyroAngles.getRoll(AngleUnit.DEGREES), 0.0) &&
+//                        MathUtilKt.epsilonEquals(gyroAngles.getPitch(AngleUnit.DEGREES), 0.0) &&
+//                        !MathUtilKt.epsilonEquals(odometryAngle, 0.0)
+//                ) gyroscope = null;
             }
         }
 

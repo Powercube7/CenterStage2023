@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous.red;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -19,6 +18,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
@@ -36,11 +36,12 @@ import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 
 import java.util.Locale;
 
-@Config
+//@Config
+@Disabled
 @Autonomous(name = "Red Short (Stage Door)")
 public class RedShortDoor extends CommandOpMode {
 
-    public static DashboardPose STACK_POSE = new DashboardPose(-58.00, -13.50, 180.00);
+    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, -13.00, 180.00);
     public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, -23.00, 150.00);
     public static double CYCLE_SPIKE_POS = 0.85, MIDDLE_OFFSET = 0.5;
     private PropLocations location = PropLocations.LEFT;
@@ -144,11 +145,12 @@ public class RedShortDoor extends CommandOpMode {
                             intake.setLiftLocation(CollectorSubsystem.LiftState.STACK);
 
                             outtake.toggleBlockers();
-                            outtake.setSpikePosition(.875);
-                        })
+                        }),
+                        new InstantCommand(() -> outtake.setSpikePosition(.875))
                 ),
                 new RunByCaseCommand(location.toString(), drive, leftYellow, middleYellow, rightYellow, true),
                 new InstantCommand(outtake::toggleBlockers).andThen(
+                        new WaitCommand(300),
                         new InstantCommand(outtake::toggleBlockers),
                         new WaitCommand(300),
                         new InstantCommand(outtake::toggleSpike)

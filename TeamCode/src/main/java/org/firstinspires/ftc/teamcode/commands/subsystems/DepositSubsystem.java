@@ -17,7 +17,7 @@ import java.util.function.BooleanSupplier;
 @Config
 public class DepositSubsystem extends SubsystemBase {
     private final DcMotor slides;
-    public static Double LOW_LEFT = 0.04, LOW_RIGHT = 0.09;
+    public static Double LOW_LEFT = 0.02, LOW_RIGHT = 0.07;
     private final int[] slidesPositions = {0, 400, 700, 1000, 1250};
     private Blocker blockerState = Blocker.FREE;
     private boolean raisingSlides = false;

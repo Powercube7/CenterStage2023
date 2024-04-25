@@ -14,11 +14,14 @@ import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
+import org.firstinspires.ftc.robotcontroller.internal.FtcOpModeRegister;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
 import org.firstinspires.ftc.teamcode.autonomous.assets.RobotLocation;
+import org.firstinspires.ftc.teamcode.autonomous.assets.Teammates;
 import org.firstinspires.ftc.teamcode.commands.AwaitPixelDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.RunByCaseCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
@@ -28,22 +31,39 @@ import org.firstinspires.ftc.teamcode.commands.subsystems.TensorflowSubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.DashboardPose;
-import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 @Config
-@Autonomous(name = "Blue Long (Stage Door)", group = "Auto (Long)")
 public class BlueLongDoor extends CommandOpMode {
 
-    public static DashboardPose STACK_FAR = new DashboardPose(-56.5, -10.75, 180.00).mirrored();
     private SampleMecanumDrive drive;
-    public static DashboardPose STACK_CLOSE = new DashboardPose(-56.75, -36.00, 180.00).mirrored();
-    public static DashboardPose BACKDROP_CYCLE = new DashboardPose(51.50, -21.00, 150.00).mirrored();
-    public static double BACKDROP_WHITE_X = 49.75, CYCLE_SPIKE_POS = 0.875;
+    public static DashboardPose STACK_FAR = new DashboardPose(-57.25, 10.75, 180.00);
+    public static DashboardPose STACK_CLOSE = new DashboardPose(-57.50, 35.50, 180.00);
+    public static DashboardPose BACKDROP_CYCLE = new DashboardPose(51.00, 21.00, -150.00);
+    public static double BACKDROP_WHITE_X = 50.50, CYCLE_SPIKE_POS = 0.875;
+    private final Teammates teammate;
     private PropLocations location = PropLocations.LEFT;
+
+    public BlueLongDoor(Teammates teammate) {
+        this.teammate = teammate;
+    }
+
+    @OpModeRegistrar
+    public static void register(OpModeManager manager) {
+        manager.register(FtcOpModeRegister.getAutonomousMeta("Blue Long (Juniper)"), new BlueLongDoor(Teammates.JUNIPER));
+        manager.register(FtcOpModeRegister.getAutonomousMeta("Blue Long (Silver Wolves)"), new BlueLongDoor(Teammates.SILVER_WOLVES));
+    }
+
+    @Override
+    public void run() {
+        super.run();
+
+        if (!drive.isBusy())
+            drive.updatePoseEstimate();
+    }
 
     @Override
     public void initialize() {
@@ -104,7 +124,7 @@ public class BlueLongDoor extends CommandOpMode {
                     drive.trajectorySequenceBuilder(STACK_CLOSE.toPose2d())
                             .setReversed(true)
                             .splineTo(new Vector2d(24.00, 35.50), 0.00)
-                            .splineTo(new Vector2d(BACKDROP_WHITE_X, 31.00), 0.00)
+                            .splineTo(new Vector2d(BACKDROP_WHITE_X, 30.00), 0.00)
                             .build()
             );
             put(PropLocations.LEFT,
@@ -163,14 +183,14 @@ public class BlueLongDoor extends CommandOpMode {
             telemetry.update();
         }
 
+        teammate.setTimerCase(PropLocations.fromId(-location.id));
+        teammate.startAutonomous();
         tensorflow.shutdown();
+
         schedule(new SequentialCommandGroup(
                 new InstantCommand(() -> {
                     intake.setLiftLocation(CollectorSubsystem.LiftState.STACK);
                     intake.adjustLiftPosition(10.0);
-
-                    if (location == PropLocations.RIGHT)
-                        drive.setPoseEstimate(drive.getPoseEstimate().minus(new Pose2d(0, 1.0)));
                 }),
                 new RunByCaseCommand(location.toString(), drive, leftPurple, middlePurple, rightPurple, true),
                 new InstantCommand(intake::toggleLiftLocation).andThen(
@@ -197,7 +217,12 @@ public class BlueLongDoor extends CommandOpMode {
                                     intake.toggleClamp();
                                 }, intake::toggleClamp
                         )
-                ).andThen(new WaitCommand(250)),
+                ).andThen(
+                        new ParallelCommandGroup(
+                                new WaitCommand(250),
+                                teammate.awaitYellow()
+                        )
+                ),
                 new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdropsWhite.get(location))),
                 new ParallelCommandGroup(
                         new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
@@ -270,65 +295,68 @@ public class BlueLongDoor extends CommandOpMode {
                                 new InstantCommand(outtake::toggleSpike),
                                 new InstantCommand(() -> outtake.setSlidesPosition(0))
                         ),
-                new InstantCommand(() -> drive.followTrajectorySequenceAsync(stackTwo)),
-                new ParallelRaceGroup(
-                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
-                        new FixedSequentialCommandGroup(
-                                new WaitUntilCommand(() -> drive.getPoseEstimate().getX() < -36),
-                                new InstantCommand(() -> {
-                                    if (location == PropLocations.RIGHT)
-                                        intake.setLiftLocation(CollectorSubsystem.LiftState.LOWERED);
-                                    else intake.adjustLiftPosition(10.0);
-                                }),
-                                new AwaitPixelDetectionCommand(colorSensor,
-                                        () -> {
-                                            drive.breakFollowing();
-                                            intake.toggleClamp();
-                                        }, intake::toggleClamp
-                                )
-                        )
-                ).andThen(new WaitCommand(250)),
-                new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdrop)),
-                new ParallelCommandGroup(
-                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
-                        new WaitCommand(700)
-                                .andThen(new InstantCommand(intake::toggleClamp)),
-                        new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
-                                .andThen(
-                                        new InstantCommand(() -> intake.setLiftLocation(CollectorSubsystem.LiftState.STACK)),
-                                        new WaitCommand(300),
-                                        new InstantCommand(() -> {
-                                            intake.setClampPosition(25);
-                                            outtake.toggleBlockers();
-
-                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
-                                        }),
-                                        new WaitCommand(300),
-                                        new InstantCommand(() -> outtake.setSlidesTicks(500))
-                                )
-                ),
-                new InstantCommand(outtake::toggleBlockers)
-                        .andThen(
-                                new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
-                                new WaitCommand(300),
-                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
-                                new WaitCommand(300)
-                        ),
-                new InstantCommand(outtake::toggleBlockers)
-                        .andThen(
-                                new WaitCommand(300),
-                                new InstantCommand(outtake::toggleSpike),
-                                new InstantCommand(() -> outtake.setSlidesPosition(0))
-                        )
+                new WaitCommand(500).andThen(
+                        new InstantCommand(() -> intake.setLiftLocation(CollectorSubsystem.LiftState.RAISED)),
+                        new WaitCommand(300),
+                        new InstantCommand(this::terminateOpModeNow)
+                )
+//                new InstantCommand(() -> drive.followTrajectorySequenceAsync(stackTwo)),
+//                new ParallelRaceGroup(
+//                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
+//                        new FixedSequentialCommandGroup(
+//                                new WaitUntilCommand(() -> drive.getPoseEstimate().getX() < -36),
+//                                new InstantCommand(() -> {
+//                                    if (location == PropLocations.RIGHT)
+//                                        intake.setLiftLocation(CollectorSubsystem.LiftState.LOWERED);
+//                                    else intake.adjustLiftPosition(10.0);
+//                                }),
+//                                new AwaitPixelDetectionCommand(colorSensor,
+//                                        () -> {
+//                                            drive.breakFollowing();
+//                                            intake.toggleClamp();
+//                                        }, intake::toggleClamp
+//                                )
+//                        )
+//                ).andThen(new WaitCommand(250)),
+//                new InstantCommand(() -> drive.followTrajectorySequenceAsync(backdrop)),
+//                new ParallelCommandGroup(
+//                        new RunCommand(drive::update).interruptOn(() -> !drive.isBusy()),
+//                        new WaitCommand(700)
+//                                .andThen(new InstantCommand(intake::toggleClamp)),
+//                        new WaitUntilCommand(() -> drive.getPoseEstimate().getX() > 0)
+//                                .andThen(
+//                                        new InstantCommand(() -> intake.setLiftLocation(CollectorSubsystem.LiftState.STACK)),
+//                                        new WaitCommand(300),
+//                                        new InstantCommand(() -> {
+//                                            intake.setClampPosition(25);
+//                                            outtake.toggleBlockers();
+//
+//                                            outtake.setSpikePosition(CYCLE_SPIKE_POS);
+//                                        }),
+//                                        new WaitCommand(300),
+//                                        new InstantCommand(() -> outtake.setSlidesTicks(500))
+//                                )
+//                ),
+//                new InstantCommand(outtake::toggleBlockers)
+//                        .andThen(
+//                                new WaitCommand(300),
+//                                new InstantCommand(outtake::toggleSpike),
+//                                new WaitCommand(300),
+//                                new InstantCommand(() -> outtake.setSpikePosition(CYCLE_SPIKE_POS)),
+//                                new WaitCommand(300)
+//                        ),
+//                new InstantCommand(outtake::toggleBlockers)
+//                        .andThen(
+//                                new WaitCommand(300),
+//                                new InstantCommand(outtake::toggleSpike),
+//                                new InstantCommand(() -> outtake.setSlidesPosition(0))
+//                        )
         ));
     }
 
     @Override
-    public void run() {
-        super.run();
-
-        if (!drive.isBusy())
-            drive.updatePoseEstimate();
+    public void runOpMode() throws InterruptedException {
+        this.reset();
+        super.runOpMode();
     }
 }

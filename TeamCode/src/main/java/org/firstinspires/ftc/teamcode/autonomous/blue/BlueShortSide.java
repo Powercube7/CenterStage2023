@@ -15,6 +15,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
@@ -33,9 +34,10 @@ import org.firstinspires.ftc.teamcode.util.DashboardPose;
 import java.util.Locale;
 
 @Config
+@Disabled
 @Autonomous(name = "Blue Short (Side)")
 public class BlueShortSide extends CommandOpMode {
-    public static DashboardPose STACK_POSE = new DashboardPose(-56.75, -36.75, 180).mirrored();
+    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, -36.75, 180).mirrored();
     public static DashboardPose BACKDROP_POSE = new DashboardPose(52.50, -52.50, 210).mirrored();
     public static double CYCLE_SPIKE_POS = 0.875;
     private PropLocations location = PropLocations.RIGHT;

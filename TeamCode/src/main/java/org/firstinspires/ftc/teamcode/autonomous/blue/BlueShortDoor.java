@@ -16,6 +16,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocations;
@@ -34,9 +35,10 @@ import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 import java.util.Locale;
 
 @Config
+@Disabled
 @Autonomous(name = "Blue Short (Stage Door)")
 public class BlueShortDoor extends CommandOpMode {
-    public static DashboardPose STACK_POSE = new DashboardPose(-57.25, 11.00, 180.00);
+    public static DashboardPose STACK_POSE = new DashboardPose(-57.75, 13.00, 180.00);
     public static DashboardPose BACKDROP_POSE = new DashboardPose(51.50, 20.00, -150.00);
     public static double CYCLE_SPIKE_POS = 0.88, MIDDLE_OFFSET = 0.0;
     private PropLocations location = PropLocations.RIGHT;

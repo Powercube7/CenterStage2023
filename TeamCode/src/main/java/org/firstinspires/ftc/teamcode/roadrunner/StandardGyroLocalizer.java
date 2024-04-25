@@ -38,9 +38,10 @@ public class StandardGyroLocalizer extends GyroTrackingWheelLocalizer {
 
         leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightBack"));
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftFront"));
-        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftBack"));
+        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "strafe_pod"));
 
         rightEncoder.setDirection(Encoder.Direction.REVERSE);
+        frontEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
     public static double encoderTicksToInches(double ticks) {
