@@ -1,10 +1,9 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
+import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.kinematics.Kinematics;
@@ -19,41 +18,60 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.util.CompFilter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 abstract class GyroTrackingWheelLocalizer implements Localizer {
 
-    private double gyroConfidence = 1;
-
     private final DecompositionSolver forwardSolver;
-    private final CompFilter filter = new CompFilter();
     private List<Double> lastWheelPositions = new ArrayList<>();
+    private final ReentrantLock imuLock = new ReentrantLock(true);
+
+    @GuardedBy("imuLock")
     private final IMU gyroscope;
-    private final FtcDashboard dashboard;
-    private Pose2d poseEstimate = new Pose2d(), poseVelocity = null, odometryPose = new Pose2d();
-    private double gyroOffset = 0;
+    private final AtomicReference<Pose2d> poseEstimate = new AtomicReference<>(new Pose2d());
+    private final AtomicReference<Double> gyroOffset = new AtomicReference<>(0.0);
+    private Pose2d poseVelocity = null;
 
     public GyroTrackingWheelLocalizer(@NonNull List<Pose2d> wheelPoses, @Nullable IMU imu) {
         assert wheelPoses.size() == 3 : "3 wheel positions must be provided";
-        dashboard = FtcDashboard.getInstance();
         gyroscope = imu;
 
         if (gyroscope != null) {
-            gyroscope.initialize(new IMU.Parameters(
-                    new RevHubOrientationOnRobot(
-                            DriveConstants.LOGO_FACING_DIR,
-                            DriveConstants.USB_FACING_DIR
-                    )
-            ));
-            gyroscope.resetYaw();
-            filter.setIsAngle(true);
-            filter.setAlpha(gyroConfidence);
+            imuLock.lock();
+            try {
+                gyroscope.initialize(new IMU.Parameters(
+                        new RevHubOrientationOnRobot(
+                                DriveConstants.LOGO_FACING_DIR,
+                                DriveConstants.USB_FACING_DIR
+                        )
+                ));
+                gyroscope.resetYaw();
+            } finally {
+                imuLock.unlock();
+            }
+
+            ScheduledExecutorService imuExecutor = Executors.newSingleThreadScheduledExecutor();
+            imuExecutor.scheduleWithFixedDelay(() -> {
+                imuLock.lock();
+                try {
+                    double gyroAngle = gyroscope.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+                    poseEstimate.set(new Pose2d(
+                            poseEstimate.get().vec(),
+                            Angle.norm(gyroOffset.get() + gyroAngle)
+                    ));
+                } finally {
+                    imuLock.unlock();
+                }
+            }, 500, 100, TimeUnit.MILLISECONDS);
         }
 
         Array2DRowRealMatrix inverseMatrix = new Array2DRowRealMatrix(3, 3);
@@ -99,33 +117,7 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
                     .collect(Collectors.toList());
 
             Pose2d robotPoseDelta = calculatePoseDelta(wheelDeltas);
-            odometryPose = Kinematics.relativeOdometryUpdate(odometryPose, robotPoseDelta);
-
-            if (gyroscope == null)
-                poseEstimate = odometryPose;
-            else {
-                YawPitchRollAngles gyroAngles = gyroscope.getRobotYawPitchRollAngles();
-                double gyroAngle = gyroOffset + gyroAngles.getYaw(AngleUnit.RADIANS);
-                double odometryAngle = odometryPose.getHeading();
-                double filterAngle = filter.update(gyroAngle, odometryAngle);
-
-                TelemetryPacket packet = new TelemetryPacket();
-                packet.put("heading (odometry)", Math.toDegrees(odometryAngle));
-                packet.put("heading (gyro)", Math.toDegrees(Angle.norm(gyroAngle)));
-                packet.put("heading (filter)", Math.toDegrees(filterAngle));
-
-                packet.put("position (odometry)", odometryPose.vec().toString());
-                packet.put("position (filtered)", poseEstimate.vec().toString());
-
-                dashboard.sendTelemetryPacket(packet);
-                poseEstimate = Kinematics.relativeOdometryUpdate(poseEstimate, new Pose2d(robotPoseDelta.vec(), filter.getDelta()));
-
-//                if (MathUtilKt.epsilonEquals(gyroAngles.getYaw(AngleUnit.DEGREES), 0.0) &&
-//                        MathUtilKt.epsilonEquals(gyroAngles.getRoll(AngleUnit.DEGREES), 0.0) &&
-//                        MathUtilKt.epsilonEquals(gyroAngles.getPitch(AngleUnit.DEGREES), 0.0) &&
-//                        !MathUtilKt.epsilonEquals(odometryAngle, 0.0)
-//                ) gyroscope = null;
-            }
+            poseEstimate.getAndUpdate(pose -> Kinematics.relativeOdometryUpdate(pose, robotPoseDelta));
         }
 
         List<Double> wheelVelocities = getWheelVelocities();
@@ -138,32 +130,23 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
     @NonNull
     @Override
     public Pose2d getPoseEstimate() {
-        return poseEstimate;
+        return poseEstimate.get();
     }
 
     @Override
     public void setPoseEstimate(@NonNull Pose2d newPose) {
         lastWheelPositions = new ArrayList<>();
-        odometryPose = newPose;
-        poseEstimate = newPose;
+        poseEstimate.set(newPose);
 
         if (gyroscope != null) {
-            gyroscope.resetYaw();
-            gyroOffset = newPose.getHeading();
-            filter.setEstimate(newPose.getHeading());
+            imuLock.lock();
+            try {
+                gyroscope.resetYaw();
+                gyroOffset.set(newPose.getHeading());
+            } finally {
+                imuLock.unlock();
+            }
         }
-    }
-
-    public void setX(double x) {
-        setPoseEstimate(new Pose2d(x, poseEstimate.getY(), poseEstimate.getHeading()));
-    }
-
-    public void setY(double y) {
-        setPoseEstimate(new Pose2d(poseEstimate.getX(), y, poseEstimate.getHeading()));
-    }
-
-    public void setHeading(double theta) {
-        setPoseEstimate(new Pose2d(poseEstimate.vec(), theta));
     }
 
     @Nullable
@@ -177,9 +160,5 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
     @Nullable
     public List<Double> getWheelVelocities() {
         return null;
-    }
-
-    public final void setGyroConfidence(double confidence) {
-        gyroConfidence = confidence;
     }
 }
