@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.util.Encoder;
+import org.firstinspires.ftc.teamcode.util.RoadrunnerEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,16 +16,16 @@ import java.util.List;
 @Config
 public class StandardGyroLocalizer extends GyroTrackingWheelLocalizer {
     public static double TICKS_PER_REV = 8192;
-    public static double WHEEL_RADIUS = 0.68897637795275590551181102362205; // in
+    public static double WHEEL_RADIUS = 1.75; // cm
     public static double GEAR_RATIO = 1.0; // output (wheel) speed / input (encoder) speed
 
     public static double X_MULTIPLIER = 1, Y_MULTIPLIER = 1;
 
-    public static double LATERAL_DISTANCE = 9.72366693451648; // in; distance between the left and right wheels
-    public static double FORWARD_OFFSET = -5.1181102362204724409448818897638; // in; offset of the lateral wheel
+    public static double LATERAL_DISTANCE = 24.6981140136718592; // cm; distance between the left and right wheels
+    public static double FORWARD_OFFSET = -13; // cm; offset of the lateral wheel
     public static boolean ENABLE_IMU = true;
 
-    private final Encoder leftEncoder, rightEncoder, frontEncoder;
+    private final RoadrunnerEncoder leftEncoder, rightEncoder, frontEncoder;
 
     public StandardGyroLocalizer(HardwareMap hardwareMap) {
         super(Arrays.asList(
@@ -34,12 +34,12 @@ public class StandardGyroLocalizer extends GyroTrackingWheelLocalizer {
                 new Pose2d(FORWARD_OFFSET, 0, Math.toRadians(90)) // front
         ), ENABLE_IMU ? hardwareMap.get(IMU.class, "imu_stable") : null);
 
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightBack"));
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftFront"));
-        frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "strafe_pod"));
+        leftEncoder = new RoadrunnerEncoder(hardwareMap.get(DcMotorEx.class, "rightBack"));
+        rightEncoder = new RoadrunnerEncoder(hardwareMap.get(DcMotorEx.class, "leftFront"));
+        frontEncoder = new RoadrunnerEncoder(hardwareMap.get(DcMotorEx.class, "strafe_pod"));
 
-        rightEncoder.setDirection(Encoder.Direction.REVERSE);
-        frontEncoder.setDirection(Encoder.Direction.REVERSE);
+        rightEncoder.setDirection(RoadrunnerEncoder.Direction.REVERSE);
+        frontEncoder.setDirection(RoadrunnerEncoder.Direction.REVERSE);
     }
 
     public static double encoderTicksToInches(double ticks) {

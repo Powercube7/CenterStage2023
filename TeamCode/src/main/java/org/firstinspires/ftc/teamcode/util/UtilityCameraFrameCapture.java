@@ -31,7 +31,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.util;
 
 import android.util.Pair;
 import android.util.Size;
@@ -39,11 +39,12 @@ import android.util.Size;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
@@ -68,8 +69,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Config
-@TeleOp(name = "Utility: Camera Frame Capture", group = "Utility")
-//@Disabled
+@DebugOpMode(name = "Utility: Camera Frame Capture", group = "Utility", type = OpModeMeta.Flavor.TELEOP)
 public class UtilityCameraFrameCapture extends LinearOpMode {
     /*
      * EDIT THESE PARAMETERS AS NEEDED

@@ -71,7 +71,7 @@ abstract class GyroTrackingWheelLocalizer implements Localizer {
                 } finally {
                     imuLock.unlock();
                 }
-            }, 500, 100, TimeUnit.MILLISECONDS);
+            }, 2000, 500, TimeUnit.MILLISECONDS);
         }
 
         Array2DRowRealMatrix inverseMatrix = new Array2DRowRealMatrix(3, 3);

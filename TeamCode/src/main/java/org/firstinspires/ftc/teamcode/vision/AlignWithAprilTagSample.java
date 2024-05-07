@@ -5,8 +5,9 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.commands.subsystems.ApriltagSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
@@ -15,7 +16,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import java.util.List;
 
 @Config
-@TeleOp(name = "Vision: AprilTag Preview", group = "Vision")
+@DebugOpMode(name = "Vision: AprilTag Preview", group = "Vision", type = OpModeMeta.Flavor.TELEOP)
 public class AlignWithAprilTagSample extends LinearOpMode {
 
     public static int TARGET_ID = 9;

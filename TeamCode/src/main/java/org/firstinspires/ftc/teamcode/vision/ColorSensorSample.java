@@ -11,19 +11,18 @@ import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.RunCommand;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
+import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@TeleOp
-@Disabled
+@DebugOpMode(group = "Sensors", type = OpModeMeta.Flavor.TELEOP)
 public class ColorSensorSample extends CommandOpMode {
     public static double GAIN = 50;
     public static boolean ENABLE_COLOR_PREVIEW = true;

@@ -75,10 +75,8 @@ public class RunByCaseCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        if (drive.isBusy() && interrupted) {
+        if (drive.isBusy() && interrupted)
             drive.breakFollowing();
-            drive.setMotorPowers(0, 0, 0, 0);
-        }
     }
 
     /**

@@ -4,9 +4,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
@@ -64,7 +65,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.StandardGyroLocalizer;
  * precision. The heading should still line up.
  */
 @Config
-@TeleOp(group = "drive")
+@DebugOpMode(group = "tuning", type = OpModeMeta.Flavor.TELEOP)
 public class TrackingWheelLateralDistanceTuner extends LinearOpMode {
     public static int NUM_TURNS = 10;
 

@@ -3,9 +3,10 @@ package org.firstinspires.ftc.teamcode.roadrunner.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.roadrunner.SampleMecanumDrive;
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardPose;
  * encoder localizer heading may be significantly off if the track width has not been tuned).
  */
 @Config
-@TeleOp(group = "drive")
+@DebugOpMode(group = "tuning", type = OpModeMeta.Flavor.TELEOP)
 public class LocalizationTest extends LinearOpMode {
     public static DashboardPose startingPose = new DashboardPose();
 

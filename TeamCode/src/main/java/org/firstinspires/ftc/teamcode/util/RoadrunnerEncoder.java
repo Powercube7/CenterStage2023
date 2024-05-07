@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  * Wraps a motor instance to provide corrected velocity counts and allow reversing independently of the corresponding
  * slot's motor direction
  */
-public class Encoder {
+public class RoadrunnerEncoder {
     private final static int CPS_STEP = 0x10000;
 
     private static double inverseOverflow(double input, double estimate) {
@@ -37,17 +37,17 @@ public class Encoder {
         }
     }
 
-    private DcMotorEx motor;
-    private NanoClock clock;
+    private final DcMotorEx motor;
+    private final NanoClock clock;
 
     private Direction direction;
 
     private int lastPosition;
     private int velocityEstimateIdx;
-    private double[] velocityEstimates;
+    private final double[] velocityEstimates;
     private double lastUpdateTime;
 
-    public Encoder(DcMotorEx motor, NanoClock clock) {
+    public RoadrunnerEncoder(DcMotorEx motor, NanoClock clock) {
         this.motor = motor;
         this.clock = clock;
 
@@ -58,7 +58,7 @@ public class Encoder {
         this.lastUpdateTime = clock.seconds();
     }
 
-    public Encoder(DcMotorEx motor) {
+    public RoadrunnerEncoder(DcMotorEx motor) {
         this(motor, NanoClock.system());
     }
 
