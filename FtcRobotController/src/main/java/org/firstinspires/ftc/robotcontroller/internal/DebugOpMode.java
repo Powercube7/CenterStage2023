@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>This annotation can be used to describe an OpMode as optional for normal match conditions.</p>
- * <p>OpModes using this annotation can be quickly enabled/disabled inside {@link org.firstinspires.ftc.robotcontroller.internal.FtcOpModeRegister FtcOpModeRegister}.</p>
+ * <p>OpModes using this annotation can be quickly enabled/disabled inside {@link DebugOpModeRegister}.</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
