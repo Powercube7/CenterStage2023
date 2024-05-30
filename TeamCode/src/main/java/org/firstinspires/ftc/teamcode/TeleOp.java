@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.RunCommand;
-import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -27,7 +24,7 @@ public class TeleOp extends CommandOpMode {
     private CollectorSubsystem intake = null;
     private DepositSubsystem outtake;
     private final int ADJUST_TICKS = 65;
-    private Trigger sensorDetection, sensorRaise;
+    private Trigger sensorDetection;
 
     /**
      * Code to run during the initialization phase of the OpMode.
@@ -53,9 +50,7 @@ public class TeleOp extends CommandOpMode {
 
         Trigger rightTrigger = new Trigger(() -> gamepad2.right_trigger > .3)
                 .and(new Trigger(() -> outtake.spikeState == DepositSubsystem.Spike.RAISED));
-        sensorDetection = new Trigger(() -> colorSensor.getDistance(DistanceUnit.CM) < 3.0 &&
-                colorSensor.getDistance(DistanceUnit.CM) > 1.0 && !sensorDisabled.get());
-        sensorRaise = new Trigger(() -> colorSensor.getDistance(DistanceUnit.CM) <= 1.0 && !sensorDisabled.get());
+        sensorDetection = new Trigger(() -> colorSensor.getDistance(DistanceUnit.CM) < 3.0 && !sensorDisabled.get());
 
         register(chassis, outtake, endgame);
 
@@ -156,14 +151,7 @@ public class TeleOp extends CommandOpMode {
         sensorDetection = sensorDetection
                 .and(new Trigger(() -> intake.location != CollectorSubsystem.LiftState.RAISED))
                 .and(new Trigger(() -> intake.clamping == CollectorSubsystem.ClampState.OPENED));
-        sensorRaise = sensorRaise
-                .and(new Trigger(() -> intake.location != CollectorSubsystem.LiftState.RAISED))
-                .and(new Trigger(() -> intake.clamping == CollectorSubsystem.ClampState.OPENED));
 
         sensorDetection.whenActive(() -> intake.toggleClamp());
-        sensorRaise.whileActiveContinuous(new SequentialCommandGroup(
-                new InstantCommand(() -> intake.adjustLiftPosition(-5.0)),
-                new WaitCommand(100)
-        ), false);
     }
 }
