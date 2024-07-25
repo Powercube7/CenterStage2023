@@ -6,9 +6,7 @@ import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DriveSubsystem;
@@ -16,7 +14,6 @@ import org.firstinspires.ftc.teamcode.commands.subsystems.EndgameSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp (Tomoiu + Vulpoiu)")
 public class TeleOp extends CommandOpMode {
@@ -24,7 +21,6 @@ public class TeleOp extends CommandOpMode {
     private CollectorSubsystem intake = null;
     private DepositSubsystem outtake;
     private final int ADJUST_TICKS = 65;
-    private Trigger sensorDetection;
 
     /**
      * Code to run during the initialization phase of the OpMode.
@@ -33,7 +29,6 @@ public class TeleOp extends CommandOpMode {
 
         this.reset(); // Reset leftover auto commands
         hubs = hardwareMap.getAll(LynxModule.class);
-        AtomicBoolean sensorDisabled = new AtomicBoolean(true);
         hubs.forEach(hub -> hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL));
 
         outtake = new DepositSubsystem(hardwareMap);
@@ -41,16 +36,12 @@ public class TeleOp extends CommandOpMode {
         DriveSubsystem chassis = new DriveSubsystem(hardwareMap);
         EndgameSubsystem endgame = new EndgameSubsystem(hardwareMap);
 
-        RevColorSensorV3 colorSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
-        colorSensor.initialize();
-
         GamepadEx driver1 = new GamepadEx(gamepad1);
         GamepadEx driver2 = new GamepadEx(gamepad2);
         chassis.setAxes(driver1::getLeftY, driver1::getLeftX, driver1::getRightX);
 
         Trigger rightTrigger = new Trigger(() -> gamepad2.right_trigger > .3)
                 .and(new Trigger(() -> outtake.spikeState == DepositSubsystem.Spike.RAISED));
-        sensorDetection = new Trigger(() -> colorSensor.getDistance(DistanceUnit.CM) < 3.0 && !sensorDisabled.get());
 
         register(chassis, outtake, endgame);
 
@@ -108,15 +99,6 @@ public class TeleOp extends CommandOpMode {
                 () -> outtake.setSpikePosition(DepositSubsystem.HIGH_RIGHT)
         );
 
-        // Safety sensor toggle
-        driver2.getGamepadButton(GamepadKeys.Button.START)
-                .whenPressed(() -> {
-                    sensorDisabled.set(!sensorDisabled.get());
-                    if (sensorDisabled.get())
-                        gamepad2.rumble(0.9, 0.9, 750);
-                    else gamepad2.rumble(0.9, 0.9, 250);
-                });
-
         schedule(new RunCommand(() -> {
             telemetry.addData("Blocker State", outtake.getBlockerState());
             telemetry.addLine();
@@ -125,8 +107,6 @@ public class TeleOp extends CommandOpMode {
             telemetry.addData("Elevator Angle", endgame.getElevatorAngle());
             telemetry.addLine();
 
-            telemetry.addData("Sensor Enabled", !sensorDisabled.get());
-            telemetry.addData("Sensor Distance (CM)", "%.3f", colorSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
         }));
     }
@@ -147,11 +127,5 @@ public class TeleOp extends CommandOpMode {
         intake = new CollectorSubsystem(hardwareMap);
         outtake.setSafeguard(() -> intake.location != CollectorSubsystem.LiftState.RAISED);
         register(intake);
-
-        sensorDetection = sensorDetection
-                .and(new Trigger(() -> intake.location != CollectorSubsystem.LiftState.RAISED))
-                .and(new Trigger(() -> intake.clamping == CollectorSubsystem.ClampState.OPENED));
-
-        sensorDetection.whenActive(() -> intake.toggleClamp());
     }
 }
