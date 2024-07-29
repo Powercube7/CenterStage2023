@@ -3,17 +3,18 @@ package org.firstinspires.ftc.teamcode.vision;
 import android.os.Environment;
 import android.util.Pair;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcontroller.internal.DebugOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.commands.subsystems.TensorflowSubsystem;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
-@DebugOpMode(name = "Vision: TensorFlow Sample", group = "Vision", type = OpModeMeta.Flavor.TELEOP)
+@Disabled
+@TeleOp(name = "Vision: TensorFlow Sample")
 public class TensorflowSample extends LinearOpMode {
 
     @Override
