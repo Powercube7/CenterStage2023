@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.localizers.ThreeWheelLocalizer;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.localizers.ThreeWheelIMULocalizer;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 
@@ -66,8 +66,7 @@ public class PoseUpdater {
      * @param hardwareMap the HardwareMap
      */
     public PoseUpdater(HardwareMap hardwareMap) {
-        // TODO: replace the second argument with your preferred localizer
-        this(hardwareMap, new ThreeWheelLocalizer(hardwareMap));
+        this(hardwareMap, new ThreeWheelIMULocalizer(hardwareMap));
     }
 
     /**
@@ -198,10 +197,8 @@ public class PoseUpdater {
     public Pose getPose() {
         if (currentPose == null) {
             currentPose = localizer.getPose();
-            return applyOffset(currentPose);
-        } else {
-            return applyOffset(currentPose);
         }
+        return applyOffset(currentPose);
     }
 
     /**
@@ -214,10 +211,8 @@ public class PoseUpdater {
     public Pose getRawPose() {
         if (currentPose == null) {
             currentPose = localizer.getPose();
-            return currentPose;
-        } else {
-            return currentPose;
         }
+        return currentPose;
     }
 
     /**
@@ -262,10 +257,8 @@ public class PoseUpdater {
             currentVelocity = new Vector();
             currentVelocity.setOrthogonalComponents(getPose().getX() - previousPose.getX(), getPose().getY() - previousPose.getY());
             currentVelocity.setMagnitude(MathFunctions.distance(getPose(), previousPose) / ((currentPoseTime - previousPoseTime) / Math.pow(10.0, 9)));
-            return MathFunctions.copyVector(currentVelocity);
-        } else {
-            return MathFunctions.copyVector(currentVelocity);
         }
+        return MathFunctions.copyVector(currentVelocity);
     }
 
     /**
@@ -288,10 +281,8 @@ public class PoseUpdater {
         if (currentAcceleration == null) {
             currentAcceleration = MathFunctions.subtractVectors(getVelocity(), previousVelocity);
             currentAcceleration.setMagnitude(currentAcceleration.getMagnitude() / ((currentPoseTime - previousPoseTime) / Math.pow(10.0, 9)));
-            return MathFunctions.copyVector(currentAcceleration);
-        } else {
-            return MathFunctions.copyVector(currentAcceleration);
         }
+        return MathFunctions.copyVector(currentAcceleration);
     }
 
     /**
