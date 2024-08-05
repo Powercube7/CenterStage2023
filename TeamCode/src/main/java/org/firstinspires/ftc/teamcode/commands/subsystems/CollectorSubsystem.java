@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class CollectorSubsystem extends SubsystemBase {
-    public static Double LOWER_LIFT = 165.0, RAISE_LIFT = 5.0, STACK_LIFT = 146.0;
+    public static Double LOWER_LIFT = 165.0, RAISE_LIFT = 10.0, STACK_LIFT = 140.0,
+                         OPEN_CLAW = 40.0, CLOSE_CLAW = 70.0, OPEN_LIFT_CLAW  = 50.0;
     private final ServoEx claw;
     private final InterpolatedServo left, right;
 
@@ -56,7 +57,7 @@ public class CollectorSubsystem extends SubsystemBase {
 
         claw = clamp;
         claw.setInverted(true);
-        claw.turnToAngle(105);
+        claw.turnToAngle(225);
         setLiftLocation(LiftState.RAISED);
     }
 
@@ -119,12 +120,12 @@ public class CollectorSubsystem extends SubsystemBase {
                 if (location != LiftState.RAISED) // Can't collect when raised
                     clampTimer.start();
 
-                claw.turnToAngle(105);
+                claw.turnToAngle(CLOSE_CLAW);
                 clamping = ClampState.CLOSED;
                 break;
             case CLOSED:
                 // Don't open the claw fully when the lift is raised to avoid the belts
-                claw.turnToAngle(location != LiftState.RAISED ? 60 : 85);
+                claw.turnToAngle(location != LiftState.RAISED ? OPEN_CLAW : OPEN_LIFT_CLAW);
                 clamping = ClampState.OPENED;
                 break;
         }

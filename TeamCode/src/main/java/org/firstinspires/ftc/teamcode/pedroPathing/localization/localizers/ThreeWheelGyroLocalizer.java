@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Encoder;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Localizer;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Matrix;
@@ -44,7 +45,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.NanoTimer;
 public class ThreeWheelGyroLocalizer extends Localizer {
     public static double FORWARD_TICKS_TO_INCHES = 0.002957;//8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
     public static double STRAFE_TICKS_TO_INCHES = -0.003127403096038503;//8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
-    public static double TURN_TICKS_TO_RADIANS = 0.002995;//8192 * 1.37795 * 2 * Math.PI * 0.5;
+    public static double TURN_TICKS_TO_RADIANS = 5.1322799285E-4;
     public static boolean useIMU = true;
     public final IMU imu;
     private HardwareMap hardwareMap;
@@ -83,7 +84,9 @@ public class ThreeWheelGyroLocalizer extends Localizer {
      */
     public ThreeWheelGyroLocalizer(HardwareMap map, Pose setStartPose) {
         hardwareMap = map;
-        imu = hardwareMap.get(IMU.class, "imu");
+        new OdometrySubsystem(hardwareMap).lower();
+
+        imu = hardwareMap.get(IMU.class, "imu_stable");
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
@@ -91,21 +94,18 @@ public class ThreeWheelGyroLocalizer extends Localizer {
                 )
         ));
 
-        // TODO: replace these with your encoder positions
-        leftEncoderPose = new Pose(-3, 5.7, 0);
-        rightEncoderPose = new Pose(-3, -5.7, 0);
-        strafeEncoderPose = new Pose(6.9, 1, Math.toRadians(90));
+        leftEncoderPose = new Pose(0, 4.8228346456692913385826771653543, 0);
+        rightEncoderPose = new Pose(0, -4.8228346456692913385826771653543, 0);
+        strafeEncoderPose = new Pose(-4.9212598425196850393700787401575, 0, Math.toRadians(90));
 
 
-        // TODO: replace these with your encoder ports
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lb"));
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lf"));
-        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rf"));
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightBack"));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftFront"));
+        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "strafe_pod"));
 
-        // TODO: reverse any encoders necessary
-        leftEncoder.setDirection(Encoder.REVERSE);
-        rightEncoder.setDirection(Encoder.FORWARD);
-        strafeEncoder.setDirection(Encoder.FORWARD);
+        leftEncoder.setDirection(Encoder.FORWARD);
+        rightEncoder.setDirection(Encoder.REVERSE);
+        strafeEncoder.setDirection(Encoder.REVERSE);
 
         setStartPose(setStartPose);
         timer = new NanoTimer();

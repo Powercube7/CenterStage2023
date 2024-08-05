@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.util.InterpolatedServo;
 
@@ -26,6 +27,14 @@ public class OdometrySubsystem {
 
         if (opMode.getClass().isAnnotationPresent(TeleOp.class)) raise();
         else lower();
+    }
+
+    public OdometrySubsystem(final HardwareMap hardwareMap) {
+        this(
+                new SimpleServo(hardwareMap, "odo_left", 0, 180),
+                new SimpleServo(hardwareMap, "odo_right", 0, 180),
+                new SimpleServo(hardwareMap, "odo_back", 0, 1800)
+        );
     }
 
     private OdometrySubsystem(ServoEx left, ServoEx right, ServoEx back) {
