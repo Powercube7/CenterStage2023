@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing.localization.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -33,7 +32,8 @@ public class TurnTuner extends OpMode {
 
     private Telemetry telemetryA;
 
-    public static double ANGLE = 2 * Math.PI;
+    public static double TURNS = 3;
+    private final double ANGLE = 2 * Math.PI * TURNS;
 
     /**
      * This initializes the PoseUpdater as well as the FTC Dashboard telemetry.
@@ -45,7 +45,7 @@ public class TurnTuner extends OpMode {
         dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
-        telemetryA.addLine("Turn your robot " + ANGLE + " radians. Your turn ticks to inches will be shown on the telemetry.");
+        telemetryA.addLine("Turn your robot " + TURNS + " times. Your turn ticks to inches will be shown on the telemetry.");
         telemetryA.update();
 
         Drawing.drawRobot(poseUpdater.getPose(), "#4CAF50");
@@ -60,8 +60,8 @@ public class TurnTuner extends OpMode {
     public void loop() {
         poseUpdater.update();
 
-        telemetryA.addData("total angle", poseUpdater.getTotalHeading());
-        telemetryA.addLine("The multiplier will display what your turn ticks to inches should be to scale your current angle to " + ANGLE + " radians.");
+        telemetryA.addData("measured angle", Math.toDegrees(poseUpdater.getTotalHeading()));
+        telemetryA.addData("target angle", Math.toDegrees(ANGLE));
         telemetryA.addData("multiplier", ANGLE / (poseUpdater.getTotalHeading() / poseUpdater.getLocalizer().getTurningMultiplier()));
 
         Drawing.drawPoseHistory(dashboardPoseTracker, "#4CAF50");

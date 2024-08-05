@@ -47,26 +47,33 @@ public class ThreeWheelGyroLocalizer extends Localizer {
     public static double FORWARD_TICKS_TO_INCHES = 0.002957;//8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
     public static double STRAFE_TICKS_TO_INCHES = -0.003127403096038503;//8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
     public static double TURN_TICKS_TO_RADIANS = 5.1322799285E-4;
-    public static boolean useIMU = true;
+
     public final IMU imu;
     private HardwareMap hardwareMap;
+
     private Pose startPose;
     private Pose displacementPose;
     private Pose currentVelocity;
     private Matrix prevRotationMatrix;
+
     private NanoTimer timer;
     private long deltaTimeNano;
+
     private Encoder leftEncoder;
     private Encoder rightEncoder;
     private Encoder strafeEncoder;
+
     private Pose leftEncoderPose;
     private Pose rightEncoderPose;
     private Pose strafeEncoderPose;
+
     private double previousIMUOrientation;
     private double deltaRadians;
     private double totalHeading;
 
     private ElapsedTime lastIMUread = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    public static boolean disableIMU = false;
+    private boolean useIMU = true;
 
     /**
      * This creates a new ThreeWheelIMULocalizer from a HardwareMap, with a starting Pose at (0,0)
@@ -234,7 +241,7 @@ public class ThreeWheelGyroLocalizer extends Localizer {
         rightEncoder.update();
         strafeEncoder.update();
 
-        if (lastIMUread.milliseconds() <= 500) {
+        if (lastIMUread.milliseconds() <= 500 || disableIMU) {
             useIMU = false;
             return;
         } else {
