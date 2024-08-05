@@ -10,13 +10,16 @@ import com.arcrobotics.ftclib.util.MathUtils;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+
+import org.firstinspires.ftc.teamcode.util.cached.CachedDcMotor;
 
 import java.util.Arrays;
 import java.util.function.BooleanSupplier;
 
 @Config
 public class DepositSubsystem extends SubsystemBase {
-    private final DcMotor slides;
+    private final CachedDcMotor slides;
     public static Double LOW_LEFT = 0.0, LOW_RIGHT = 0.05;
     private final int[] slidesPositions = {0, 400, 700, 1000, 1250};
     private Blocker blockerState = Blocker.FREE;
@@ -32,7 +35,11 @@ public class DepositSubsystem extends SubsystemBase {
 
         this.stopperTop = stopperTop;
         this.stopperBottom = stopperBottom;
-        this.slides = slides;
+        this.slides = new CachedDcMotor(slides);
+
+        MotorConfigurationType motorConfigurationType = this.slides.getMotorType().clone();
+        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
+        this.slides.setMotorType(motorConfigurationType);
 
         this.stopperBottom.setInverted(true);
         this.rightLift.setInverted(true);

@@ -37,6 +37,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.FilteredPIDFController;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.KalmanFilter;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.PIDFController;
+import org.firstinspires.ftc.teamcode.util.cached.CachedDcMotorEx;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,10 +56,10 @@ import java.util.List;
 public class Follower {
     private HardwareMap hardwareMap;
 
-    private DcMotorEx leftFront;
-    private DcMotorEx leftRear;
-    private DcMotorEx rightFront;
-    private DcMotorEx rightRear;
+    private CachedDcMotorEx leftFront;
+    private CachedDcMotorEx leftRear;
+    private CachedDcMotorEx rightFront;
+    private CachedDcMotorEx rightRear;
     private List<DcMotorEx> motors;
 
     private DriveVectorScaler driveVectorScaler;
@@ -167,14 +168,13 @@ public class Follower {
         driveVectorScaler = new DriveVectorScaler(FollowerConstants.frontLeftVector);
         poseUpdater = new PoseUpdater(hardwareMap);
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront"));
+        leftRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftRear"));
+        rightRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightRear"));
+        rightFront = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightFront"));
 
-        // TODO: Make sure that this is the direction your motors need to be reversed in.
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motors = Arrays.asList(leftFront, leftRear, rightFront, rightRear);
 

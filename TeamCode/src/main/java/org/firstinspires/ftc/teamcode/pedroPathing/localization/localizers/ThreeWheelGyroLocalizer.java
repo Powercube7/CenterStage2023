@@ -5,6 +5,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
@@ -65,6 +66,8 @@ public class ThreeWheelGyroLocalizer extends Localizer {
     private double deltaRadians;
     private double totalHeading;
 
+    private ElapsedTime lastIMUread = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+
     /**
      * This creates a new ThreeWheelIMULocalizer from a HardwareMap, with a starting Pose at (0,0)
      * facing 0 heading.
@@ -85,6 +88,7 @@ public class ThreeWheelGyroLocalizer extends Localizer {
     public ThreeWheelGyroLocalizer(HardwareMap map, Pose setStartPose) {
         hardwareMap = map;
         new OdometrySubsystem(hardwareMap).lower();
+        lastIMUread.reset();
 
         imu = hardwareMap.get(IMU.class, "imu_stable");
         imu.initialize(new IMU.Parameters(
@@ -229,6 +233,14 @@ public class ThreeWheelGyroLocalizer extends Localizer {
         leftEncoder.update();
         rightEncoder.update();
         strafeEncoder.update();
+
+        if (lastIMUread.milliseconds() <= 500) {
+            useIMU = false;
+            return;
+        } else {
+            useIMU = true;
+            lastIMUread.reset();
+        }
 
         double currentIMUOrientation = MathFunctions.normalizeAngle(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         deltaRadians = MathFunctions.getTurnDirection(previousIMUOrientation, currentIMUOrientation) * MathFunctions.getSmallestAngleDifference(currentIMUOrientation, previousIMUOrientation);
