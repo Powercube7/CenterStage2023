@@ -226,6 +226,9 @@ public class CachedDcMotor extends CachedDcMotorSimple implements DcMotor {
      */
     @Override
     public void setMode(RunMode mode) {
+        if (mode == RunMode.RUN_TO_POSITION)
+            dcMotor.setTargetPosition(dcMotor.getTargetPosition());
+
         dcMotor.setMode(mode);
     }
 }

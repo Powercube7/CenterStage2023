@@ -57,7 +57,7 @@ public class CollectorSubsystem extends SubsystemBase {
 
         claw = clamp;
         claw.setInverted(true);
-        claw.turnToAngle(225);
+        claw.turnToAngle(CLOSE_CLAW);
         setLiftLocation(LiftState.RAISED);
     }
 

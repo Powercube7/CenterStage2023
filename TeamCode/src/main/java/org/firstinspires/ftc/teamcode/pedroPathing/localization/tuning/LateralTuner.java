@@ -4,10 +4,13 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.commands.subsystems.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.PoseUpdater;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.DashboardPoseTracker;
 import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
@@ -27,7 +30,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
  */
 @Config
 @Autonomous(name = "Lateral Localizer Tuner", group = "Autonomous Pathing Tuning")
-public class LateralTuner extends OpMode {
+public class LateralTuner extends CommandOpMode {
     private PoseUpdater poseUpdater;
     private DashboardPoseTracker dashboardPoseTracker;
 
@@ -39,8 +42,11 @@ public class LateralTuner extends OpMode {
      * This initializes the PoseUpdater as well as the FTC Dashboard telemetry.
      */
     @Override
-    public void init() {
+    public void initialize() {
         poseUpdater = new PoseUpdater(hardwareMap);
+        DriveSubsystem chassis = new DriveSubsystem(hardwareMap);
+        GamepadEx gamepad = new GamepadEx(gamepad1);
+        chassis.setAxes(gamepad::getLeftY, gamepad::getLeftX, gamepad::getRightX);
 
         dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);
 
@@ -50,6 +56,7 @@ public class LateralTuner extends OpMode {
 
         Drawing.drawRobot(poseUpdater.getPose(), "#4CAF50");
         Drawing.sendPacket();
+        register(chassis);
     }
 
     /**
@@ -57,7 +64,8 @@ public class LateralTuner extends OpMode {
      * calculated multiplier and draws the robot.
      */
     @Override
-    public void loop() {
+    public void run() {
+        super.run();
         poseUpdater.update();
 
         telemetryA.addData("distance moved", poseUpdater.getPose().getY());

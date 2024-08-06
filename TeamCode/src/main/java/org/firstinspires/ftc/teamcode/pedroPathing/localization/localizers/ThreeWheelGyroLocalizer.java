@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.localization.localizers;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -7,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.commands.subsystems.OdometrySubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Encoder;
@@ -44,9 +46,10 @@ import org.firstinspires.ftc.teamcode.pedroPathing.util.NanoTimer;
  */
 @Config
 public class ThreeWheelGyroLocalizer extends Localizer {
-    public static double FORWARD_TICKS_TO_INCHES = 0.002957;//8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
-    public static double STRAFE_TICKS_TO_INCHES = -0.003127403096038503;//8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
-    public static double TURN_TICKS_TO_RADIANS = 5.1322799285E-4;
+    public static double FORWARD_TICKS_TO_INCHES = 5.316047258262831E-4;//8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
+    public static double STRAFE_TICKS_TO_INCHES = -0.0005276225416758342;//8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
+    public static double TURN_TICKS_TO_RADIANS = 0.00051617492;
+    public static double LATERAL_DISTANCE = 24.5; // cm
 
     public final IMU imu;
     private HardwareMap hardwareMap;
@@ -71,9 +74,11 @@ public class ThreeWheelGyroLocalizer extends Localizer {
     private double deltaRadians;
     private double totalHeading;
 
-    private ElapsedTime lastIMUread = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    private final ElapsedTime lastIMUread = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     public static boolean disableIMU = false;
     private boolean useIMU = true;
+
+    private final Telemetry dashboard = FtcDashboard.getInstance().getTelemetry();
 
     /**
      * This creates a new ThreeWheelIMULocalizer from a HardwareMap, with a starting Pose at (0,0)
@@ -105,14 +110,14 @@ public class ThreeWheelGyroLocalizer extends Localizer {
                 )
         ));
 
-        leftEncoderPose = new Pose(0, 4.8228346456692913385826771653543, 0);
-        rightEncoderPose = new Pose(0, -4.8228346456692913385826771653543, 0);
-        strafeEncoderPose = new Pose(-4.9212598425196850393700787401575, 0, Math.toRadians(90));
+        leftEncoderPose = new Pose(0, LATERAL_DISTANCE / (2 * 2.54), 0);
+        rightEncoderPose = new Pose(0, -LATERAL_DISTANCE / (2 * 2.54), 0);
+        strafeEncoderPose = new Pose(-5.0885826771653543307086614173228, 0, Math.toRadians(90));
 
 
         leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightBack"));
         rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftFront"));
-        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "strafe_pod"));
+        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "leftBack"));
 
         leftEncoder.setDirection(Encoder.FORWARD);
         rightEncoder.setDirection(Encoder.REVERSE);
@@ -202,8 +207,10 @@ public class ThreeWheelGyroLocalizer extends Localizer {
      */
     @Override
     public void update() {
+        dashboard.addData("IMU timer", lastIMUread.milliseconds());
         deltaTimeNano = timer.getElapsedTime();
         timer.resetTimer();
+        dashboard.update();
 
         updateEncoders();
         Matrix robotDeltas = getRobotDeltas();
@@ -241,7 +248,7 @@ public class ThreeWheelGyroLocalizer extends Localizer {
         rightEncoder.update();
         strafeEncoder.update();
 
-        if (lastIMUread.milliseconds() <= 500 || disableIMU) {
+        if (lastIMUread.milliseconds() <= 300 || disableIMU) {
             useIMU = false;
             return;
         } else {
