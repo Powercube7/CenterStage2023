@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.localizers.ThreeWheelGyroLocalizer;
+import org.firstinspires.ftc.teamcode.pedroPathing.localization.localizers.ThreeWheelLocalizer;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
 
@@ -19,11 +19,10 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
  * @version 1.0, 3/4/2024
  */
 public class PoseUpdater {
-    private HardwareMap hardwareMap;
 
     private IMU imu;
 
-    private Localizer localizer;
+    private final Localizer localizer;
 
     private Pose startingPose = new Pose(0,0,0);
 
@@ -51,8 +50,6 @@ public class PoseUpdater {
      * @param localizer the Localizer
      */
     public PoseUpdater(HardwareMap hardwareMap, Localizer localizer) {
-        this.hardwareMap = hardwareMap;
-
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
@@ -66,7 +63,7 @@ public class PoseUpdater {
      * @param hardwareMap the HardwareMap
      */
     public PoseUpdater(HardwareMap hardwareMap) {
-        this(hardwareMap, new ThreeWheelGyroLocalizer(hardwareMap));
+        this(hardwareMap, new ThreeWheelLocalizer(hardwareMap));
     }
 
     /**
