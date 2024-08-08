@@ -3,14 +3,17 @@ package org.firstinspires.ftc.teamcode.pedroPathing.follower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.drivePIDFSwitch;
 import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.forwardZeroPowerAcceleration;
 import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.headingPIDFSwitch;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.largeDrivePIDFFeedForward;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.largeHeadingPIDFFeedForward;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.largeTranslationalPIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.drivePIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.headingPIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.translationalPIDFFeedForward;
 import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.lateralZeroPowerAcceleration;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.smallDrivePIDFFeedForward;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.smallHeadingPIDFFeedForward;
-import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.smallTranslationalPIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.secondaryDrivePIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.secondaryHeadingPIDFFeedForward;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.secondaryTranslationalPIDFFeedForward;
 import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.translationalPIDFSwitch;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.useSecondaryDrivePID;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.useSecondaryHeadingPID;
+import static org.firstinspires.ftc.teamcode.pedroPathing.tuning.FollowerConstants.useSecondaryTranslationalPID;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -83,13 +86,13 @@ public class Follower {
     private boolean followingPathChain;
     private boolean holdingPosition;
     private boolean isBusy;
-    private boolean auto = true;
     private boolean reachedParametricPathEnd;
     private boolean holdPositionAtEnd;
+    private boolean teleopDrive;
 
     private double maxPower = 1;
-    private double previousSmallTranslationalIntegral;
-    private double previousLargeTranslationalIntegral;
+    private double previousSecondaryTranslationalIntegral;
+    private double previousTranslationalIntegral;
     private double holdPointTranslationalScaling = FollowerConstants.holdPointTranslationalScaling;
     private double holdPointHeadingScaling = FollowerConstants.holdPointHeadingScaling;
     public double driveError;
@@ -98,8 +101,7 @@ public class Follower {
     private long reachedParametricPathEndTime;
 
     private double[] drivePowers;
-
-    private Vector[] teleOpMovementVectors = new Vector[]{new Vector(), new Vector(), new Vector()};
+    private double[] teleopDriveValues;
 
     private ArrayList<Vector> velocities = new ArrayList<>();
     private ArrayList<Vector> accelerations = new ArrayList<>();
@@ -107,22 +109,24 @@ public class Follower {
     private Vector averageVelocity;
     private Vector averagePreviousVelocity;
     private Vector averageAcceleration;
-    private Vector smallTranslationalIntegralVector;
-    private Vector largeTranslationalIntegralVector;
+    private Vector secondaryTranslationalIntegralVector;
+    private Vector translationalIntegralVector;
+    private Vector teleopDriveVector;
+    private Vector teleopHeadingVector;
     public Vector driveVector;
     public Vector headingVector;
     public Vector translationalVector;
     public Vector centripetalVector;
     public Vector correctiveVector;
 
-    private PIDFController smallTranslationalPIDF = new PIDFController(FollowerConstants.smallTranslationalPIDFCoefficients);
-    private PIDFController smallTranslationalIntegral = new PIDFController(FollowerConstants.smallTranslationalIntegral);
-    private PIDFController largeTranslationalPIDF = new PIDFController(FollowerConstants.largeTranslationalPIDFCoefficients);
-    private PIDFController largeTranslationalIntegral = new PIDFController(FollowerConstants.largeTranslationalIntegral);
-    private PIDFController smallHeadingPIDF = new PIDFController(FollowerConstants.smallHeadingPIDFCoefficients);
-    private PIDFController largeHeadingPIDF = new PIDFController(FollowerConstants.largeHeadingPIDFCoefficients);
-    private FilteredPIDFController smallDrivePIDF = new FilteredPIDFController(FollowerConstants.smallDrivePIDFCoefficients);
-    private FilteredPIDFController largeDrivePIDF = new FilteredPIDFController(FollowerConstants.largeDrivePIDFCoefficients);
+    private PIDFController secondaryTranslationalPIDF = new PIDFController(FollowerConstants.secondaryTranslationalPIDFCoefficients);
+    private PIDFController secondaryTranslationalIntegral = new PIDFController(FollowerConstants.secondaryTranslationalIntegral);
+    private PIDFController translationalPIDF = new PIDFController(FollowerConstants.translationalPIDFCoefficients);
+    private PIDFController translationalIntegral = new PIDFController(FollowerConstants.translationalIntegral);
+    private PIDFController secondaryHeadingPIDF = new PIDFController(FollowerConstants.secondaryHeadingPIDFCoefficients);
+    private PIDFController headingPIDF = new PIDFController(FollowerConstants.headingPIDFCoefficients);
+    private FilteredPIDFController secondaryDrivePIDF = new FilteredPIDFController(FollowerConstants.secondaryDrivePIDFCoefficients);
+    private FilteredPIDFController drivePIDF = new FilteredPIDFController(FollowerConstants.drivePIDFCoefficients);
 
     private KalmanFilter driveKalmanFilter = new KalmanFilter(FollowerConstants.driveKalmanFilterParameters);
     private double[] driveErrors;
@@ -146,19 +150,6 @@ public class Follower {
     }
 
     /**
-     * This creates a new Follower given a HardwareMap and sets whether the Follower is being used
-     * in autonomous or teleop.
-     *
-     * @param hardwareMap HardwareMap required
-     * @param setAuto     sets whether or not the Follower is being used in autonomous or teleop
-     */
-    public Follower(HardwareMap hardwareMap, boolean setAuto) {
-        this.hardwareMap = hardwareMap;
-        setAuto(setAuto);
-        initialize();
-    }
-
-    /**
      * This initializes the follower.
      * In this, the DriveVectorScaler and PoseUpdater is instantiated, the drive motors are
      * initialized and their behavior is set, and the variables involved in approximating first and
@@ -169,8 +160,8 @@ public class Follower {
         poseUpdater = new PoseUpdater(hardwareMap);
 
         leftFront = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftFront"));
-        leftRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftRear"));
-        rightRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightRear"));
+        leftRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "leftBack"));
+        rightRear = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightBack"));
         rightFront = new CachedDcMotorEx(hardwareMap.get(DcMotorEx.class, "rightFront"));
 
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -188,15 +179,9 @@ public class Follower {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-        for (int i = 0; i < AVERAGED_VELOCITY_SAMPLE_NUMBER; i++) {
-            velocities.add(new Vector());
-        }
-        for (int i = 0; i < AVERAGED_VELOCITY_SAMPLE_NUMBER / 2; i++) {
-            accelerations.add(new Vector());
-        }
-        calculateAveragedVelocityAndAcceleration();
-
         dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);
+
+        breakFollowing();
     }
 
     /**
@@ -429,6 +414,14 @@ public class Follower {
     }
 
     /**
+     * This starts teleop drive control.
+     */
+    public void startTeleopDrive() {
+        breakFollowing();
+        teleopDrive = true;
+    }
+
+    /**
      * This calls an update to the PoseUpdater, which updates the robot's current position estimate.
      * This also updates all the Follower's PIDFs, which updates the motor powers.
      */
@@ -439,7 +432,7 @@ public class Follower {
             dashboardPoseTracker.update();
         }
 
-        if (auto) {
+        if (!teleopDrive) {
             if (holdingPosition) {
                 closestPose = currentPath.getClosestPoint(poseUpdater.getPose(), 1);
 
@@ -499,7 +492,7 @@ public class Follower {
 
             calculateAveragedVelocityAndAcceleration();
 
-            drivePowers = driveVectorScaler.getDrivePowers(teleOpMovementVectors[0], teleOpMovementVectors[1], teleOpMovementVectors[2], poseUpdater.getPose().getHeading());
+            drivePowers = driveVectorScaler.getDrivePowers(getCentripetalForceCorrection(), teleopHeadingVector, teleopDriveVector, poseUpdater.getPose().getHeading());
 
             limitDrivePowers();
 
@@ -507,6 +500,43 @@ public class Follower {
                 motors.get(i).setPower(drivePowers[i]);
             }
         }
+    }
+
+    /**
+     * This sets the teleop drive vectors. This defaults to robot centric.
+     *
+     * @param forwardDrive determines the forward drive vector for the robot in teleop. In field centric
+     *                     movement, this is the x-axis.
+     * @param lateralDrive determines the lateral drive vector for the robot in teleop. In field centric
+     *                     movement, this is the y-axis.
+     * @param heading determines the heading vector for the robot in teleop.
+     */
+    public void setTeleOpMovementVectors(double forwardDrive, double lateralDrive, double heading) {
+        setTeleOpMovementVectors(forwardDrive, lateralDrive, heading, true);
+    }
+
+    /**
+     * This sets the teleop drive vectors.
+     *
+     * @param forwardDrive determines the forward drive vector for the robot in teleop. In field centric
+     *                     movement, this is the x-axis.
+     * @param lateralDrive determines the lateral drive vector for the robot in teleop. In field centric
+     *                     movement, this is the y-axis.
+     * @param heading determines the heading vector for the robot in teleop.
+     * @param robotCentric sets if the movement will be field or robot centric
+     */
+    public void setTeleOpMovementVectors(double forwardDrive, double lateralDrive, double heading, boolean robotCentric) {
+        teleopDriveValues[0] = MathFunctions.clamp(forwardDrive, -1, 1);
+        teleopDriveValues[1] = MathFunctions.clamp(lateralDrive, -1, 1);
+        teleopDriveValues[2] = MathFunctions.clamp(heading, -1, 1);
+        teleopDriveVector.setOrthogonalComponents(teleopDriveValues[0], teleopDriveValues[1]);
+        teleopDriveVector.setMagnitude(MathFunctions.clamp(teleopDriveVector.getMagnitude(), 0, 1));
+
+        if (robotCentric) {
+            teleopDriveVector.rotateVector(getPose().getHeading());
+        }
+
+        teleopHeadingVector.setComponents(teleopDriveValues[2], getPose().getHeading());
     }
 
     /**
@@ -564,21 +594,22 @@ public class Follower {
      * This resets the PIDFs and stops following the current Path.
      */
     public void breakFollowing() {
+        teleopDrive = false;
         holdingPosition = false;
         isBusy = false;
         reachedParametricPathEnd = false;
-        smallDrivePIDF.reset();
-        largeDrivePIDF.reset();
-        smallHeadingPIDF.reset();
-        largeHeadingPIDF.reset();
-        smallTranslationalPIDF.reset();
-        smallTranslationalIntegral.reset();
-        smallTranslationalIntegralVector = new Vector();
-        previousSmallTranslationalIntegral = 0;
-        largeTranslationalPIDF.reset();
-        largeTranslationalIntegral.reset();
-        largeTranslationalIntegralVector = new Vector();
-        previousLargeTranslationalIntegral = 0;
+        secondaryDrivePIDF.reset();
+        drivePIDF.reset();
+        secondaryHeadingPIDF.reset();
+        headingPIDF.reset();
+        secondaryTranslationalPIDF.reset();
+        secondaryTranslationalIntegral.reset();
+        secondaryTranslationalIntegralVector = new Vector();
+        previousSecondaryTranslationalIntegral = 0;
+        translationalPIDF.reset();
+        translationalIntegral.reset();
+        translationalIntegralVector = new Vector();
+        previousTranslationalIntegral = 0;
         driveVector = new Vector();
         headingVector = new Vector();
         translationalVector = new Vector();
@@ -594,6 +625,17 @@ public class Follower {
         }
         driveKalmanFilter.reset();
 
+        for (int i = 0; i < AVERAGED_VELOCITY_SAMPLE_NUMBER; i++) {
+            velocities.add(new Vector());
+        }
+        for (int i = 0; i < AVERAGED_VELOCITY_SAMPLE_NUMBER / 2; i++) {
+            accelerations.add(new Vector());
+        }
+        calculateAveragedVelocityAndAcceleration();
+        teleopDriveValues = new double[3];
+        teleopDriveVector = new Vector();
+        teleopHeadingVector = new Vector();
+
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setPower(0);
         }
@@ -606,14 +648,6 @@ public class Follower {
      */
     public boolean isBusy() {
         return isBusy;
-    }
-
-    /**
-     * Sets the correctional, heading, and drive movement vectors for teleop enhancements.
-     * The correctional Vector only accounts for an approximated centripetal correction.
-     */
-    public void setMovementVectors(Vector correctional, Vector heading, Vector drive) {
-        teleOpMovementVectors = new Vector[]{correctional, heading, drive};
     }
 
     /**
@@ -632,14 +666,14 @@ public class Follower {
 
         driveError = getDriveVelocityError();
 
-        if (Math.abs(driveError) < drivePIDFSwitch) {
-            smallDrivePIDF.updateError(driveError);
-            driveVector = new Vector(MathFunctions.clamp(smallDrivePIDF.runPIDF() + smallDrivePIDFFeedForward * MathFunctions.getSign(driveError), -1, 1), currentPath.getClosestPointTangentVector().getTheta());
+        if (Math.abs(driveError) < drivePIDFSwitch && useSecondaryDrivePID) {
+            secondaryDrivePIDF.updateError(driveError);
+            driveVector = new Vector(MathFunctions.clamp(secondaryDrivePIDF.runPIDF() + secondaryDrivePIDFFeedForward * MathFunctions.getSign(driveError), -1, 1), currentPath.getClosestPointTangentVector().getTheta());
             return MathFunctions.copyVector(driveVector);
         }
 
-        largeDrivePIDF.updateError(driveError);
-        driveVector = new Vector(MathFunctions.clamp(largeDrivePIDF.runPIDF() + largeDrivePIDFFeedForward * MathFunctions.getSign(driveError), -1, 1), currentPath.getClosestPointTangentVector().getTheta());
+        drivePIDF.updateError(driveError);
+        driveVector = new Vector(MathFunctions.clamp(drivePIDF.runPIDF() + drivePIDFFeedForward * MathFunctions.getSign(driveError), -1, 1), currentPath.getClosestPointTangentVector().getTheta());
         return MathFunctions.copyVector(driveVector);
     }
 
@@ -681,14 +715,14 @@ public class Follower {
         previousRawDriveError = rawDriveError;
         rawDriveError =  velocityErrorVector.getMagnitude() * MathFunctions.getSign(MathFunctions.dotProduct(velocityErrorVector, currentPath.getClosestPointTangentVector()));
 
-        double projection = 2 * driveErrors[2] - driveErrors[1];
+        double projection = 2 * driveErrors[1] - driveErrors[0];
 
         driveKalmanFilter.update(rawDriveError - previousRawDriveError, projection);
 
         for (int i = 0; i < driveErrors.length - 1; i++) {
             driveErrors[i] = driveErrors[i + 1];
         }
-        driveErrors[2] = driveKalmanFilter.getState();
+        driveErrors[1] = driveKalmanFilter.getState();
 
         return driveKalmanFilter.getState();
     }
@@ -706,13 +740,13 @@ public class Follower {
     public Vector getHeadingVector() {
         if (!useHeading) return new Vector();
         headingError = MathFunctions.getTurnDirection(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal()) * MathFunctions.getSmallestAngleDifference(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal());
-        if (Math.abs(headingError) < headingPIDFSwitch) {
-            smallHeadingPIDF.updateError(headingError);
-            headingVector = new Vector(MathFunctions.clamp(smallHeadingPIDF.runPIDF() + smallHeadingPIDFFeedForward * MathFunctions.getTurnDirection(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal()), -1, 1), poseUpdater.getPose().getHeading());
+        if (Math.abs(headingError) < headingPIDFSwitch && useSecondaryHeadingPID) {
+            secondaryHeadingPIDF.updateError(headingError);
+            headingVector = new Vector(MathFunctions.clamp(secondaryHeadingPIDF.runPIDF() + secondaryHeadingPIDFFeedForward * MathFunctions.getTurnDirection(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal()), -1, 1), poseUpdater.getPose().getHeading());
             return MathFunctions.copyVector(headingVector);
         }
-        largeHeadingPIDF.updateError(headingError);
-        headingVector = new Vector(MathFunctions.clamp(largeHeadingPIDF.runPIDF() + largeHeadingPIDFFeedForward * MathFunctions.getTurnDirection(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal()), -1, 1), poseUpdater.getPose().getHeading());
+        headingPIDF.updateError(headingError);
+        headingVector = new Vector(MathFunctions.clamp(headingPIDF.runPIDF() + headingPIDFFeedForward * MathFunctions.getTurnDirection(poseUpdater.getPose().getHeading(), currentPath.getClosestPointHeadingGoal()), -1, 1), poseUpdater.getPose().getHeading());
         return MathFunctions.copyVector(headingVector);
     }
 
@@ -756,26 +790,26 @@ public class Follower {
         if (!(currentPath.isAtParametricEnd() || currentPath.isAtParametricStart())) {
             translationalVector = MathFunctions.subtractVectors(translationalVector, new Vector(MathFunctions.dotProduct(translationalVector, MathFunctions.normalizeVector(currentPath.getClosestPointTangentVector())), currentPath.getClosestPointTangentVector().getTheta()));
 
-            smallTranslationalIntegralVector = MathFunctions.subtractVectors(smallTranslationalIntegralVector, new Vector(MathFunctions.dotProduct(smallTranslationalIntegralVector, MathFunctions.normalizeVector(currentPath.getClosestPointTangentVector())), currentPath.getClosestPointTangentVector().getTheta()));
-            largeTranslationalIntegralVector = MathFunctions.subtractVectors(largeTranslationalIntegralVector, new Vector(MathFunctions.dotProduct(largeTranslationalIntegralVector, MathFunctions.normalizeVector(currentPath.getClosestPointTangentVector())), currentPath.getClosestPointTangentVector().getTheta()));
+            secondaryTranslationalIntegralVector = MathFunctions.subtractVectors(secondaryTranslationalIntegralVector, new Vector(MathFunctions.dotProduct(secondaryTranslationalIntegralVector, MathFunctions.normalizeVector(currentPath.getClosestPointTangentVector())), currentPath.getClosestPointTangentVector().getTheta()));
+            translationalIntegralVector = MathFunctions.subtractVectors(translationalIntegralVector, new Vector(MathFunctions.dotProduct(translationalIntegralVector, MathFunctions.normalizeVector(currentPath.getClosestPointTangentVector())), currentPath.getClosestPointTangentVector().getTheta()));
         }
 
-        if (MathFunctions.distance(poseUpdater.getPose(), closestPose) < translationalPIDFSwitch) {
-            smallTranslationalIntegral.updateError(translationalVector.getMagnitude());
-            smallTranslationalIntegralVector = MathFunctions.addVectors(smallTranslationalIntegralVector, new Vector(smallTranslationalIntegral.runPIDF() - previousSmallTranslationalIntegral, translationalVector.getTheta()));
-            previousSmallTranslationalIntegral = smallTranslationalIntegral.runPIDF();
+        if (MathFunctions.distance(poseUpdater.getPose(), closestPose) < translationalPIDFSwitch && useSecondaryTranslationalPID) {
+            secondaryTranslationalIntegral.updateError(translationalVector.getMagnitude());
+            secondaryTranslationalIntegralVector = MathFunctions.addVectors(secondaryTranslationalIntegralVector, new Vector(secondaryTranslationalIntegral.runPIDF() - previousSecondaryTranslationalIntegral, translationalVector.getTheta()));
+            previousSecondaryTranslationalIntegral = secondaryTranslationalIntegral.runPIDF();
 
-            smallTranslationalPIDF.updateError(translationalVector.getMagnitude());
-            translationalVector.setMagnitude(smallTranslationalPIDF.runPIDF() + smallTranslationalPIDFFeedForward);
-            translationalVector = MathFunctions.addVectors(translationalVector, smallTranslationalIntegralVector);
+            secondaryTranslationalPIDF.updateError(translationalVector.getMagnitude());
+            translationalVector.setMagnitude(secondaryTranslationalPIDF.runPIDF() + secondaryTranslationalPIDFFeedForward);
+            translationalVector = MathFunctions.addVectors(translationalVector, secondaryTranslationalIntegralVector);
         } else {
-            largeTranslationalIntegral.updateError(translationalVector.getMagnitude());
-            largeTranslationalIntegralVector = MathFunctions.addVectors(largeTranslationalIntegralVector, new Vector(largeTranslationalIntegral.runPIDF() - previousLargeTranslationalIntegral, translationalVector.getTheta()));
-            previousLargeTranslationalIntegral = largeTranslationalIntegral.runPIDF();
+            translationalIntegral.updateError(translationalVector.getMagnitude());
+            translationalIntegralVector = MathFunctions.addVectors(translationalIntegralVector, new Vector(translationalIntegral.runPIDF() - previousTranslationalIntegral, translationalVector.getTheta()));
+            previousTranslationalIntegral = translationalIntegral.runPIDF();
 
-            largeTranslationalPIDF.updateError(translationalVector.getMagnitude());
-            translationalVector.setMagnitude(largeTranslationalPIDF.runPIDF() + largeTranslationalPIDFFeedForward);
-            translationalVector = MathFunctions.addVectors(translationalVector, largeTranslationalIntegralVector);
+            translationalPIDF.updateError(translationalVector.getMagnitude());
+            translationalVector.setMagnitude(translationalPIDF.runPIDF() + translationalPIDFFeedForward);
+            translationalVector = MathFunctions.addVectors(translationalVector, translationalIntegralVector);
         }
 
         translationalVector.setMagnitude(MathFunctions.clamp(translationalVector.getMagnitude(), 0, 1));
@@ -809,7 +843,7 @@ public class Follower {
     public Vector getCentripetalForceCorrection() {
         if (!useCentripetal) return new Vector();
         double curvature;
-        if (auto) {
+        if (!teleopDrive) {
             curvature = currentPath.getClosestPointCurvature();
         } else {
             double yPrime = averageVelocity.getYComponent() / averageVelocity.getXComponent();
@@ -830,15 +864,6 @@ public class Follower {
      */
     public Pose getClosestPose() {
         return closestPose;
-    }
-
-    /**
-     * This sets whether or not the Follower is being used in auto or teleop.
-     *
-     * @param set sets auto or not
-     */
-    public void setAuto(boolean set) {
-        auto = set;
     }
 
     /**

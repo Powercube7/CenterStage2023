@@ -28,7 +28,7 @@ public class ThreeWheelLocalizer extends Localizer {
     public static double TURN_TICKS_TO_RADIANS = 0.00051617492;
 
     public static double LATERAL_DISTANCE = 24.5; // cm
-    public static double FORWARD_OFFSET = -12.925; // cm
+    public static double FORWARD_OFFSET = 14; // cm
     public static boolean useIMU = true;
     private final Timing.Timer lastIMUread = new Timing.Timer(500, TimeUnit.MILLISECONDS);
     private final NanoTimer timer;
