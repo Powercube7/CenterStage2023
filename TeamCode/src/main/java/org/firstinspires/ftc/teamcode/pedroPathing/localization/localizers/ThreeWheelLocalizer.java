@@ -23,14 +23,14 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class ThreeWheelLocalizer extends Localizer {
-    public static double FORWARD_TICKS_TO_INCHES = 5.316047258262831E-4;
-    public static double STRAFE_TICKS_TO_INCHES = -0.0005276225416758342;
-    public static double TURN_TICKS_TO_RADIANS = 0.00051617492;
+    public static double FORWARD_TICKS_TO_INCHES = 5.292746534365396E-4;
+    public static double STRAFE_TICKS_TO_INCHES = -5.314807892577837E-4;
+    public static double TURN_TICKS_TO_RADIANS = 5.188829415175665E-4;
 
     public static double LATERAL_DISTANCE = 24.5; // cm
-    public static double FORWARD_OFFSET = 14; // cm
+    public static double FORWARD_OFFSET = 12.925; // cm
     public static boolean useIMU = true;
-    private final Timing.Timer lastIMUread = new Timing.Timer(500, TimeUnit.MILLISECONDS);
+    private final Timing.Timer IMUcooldown = new Timing.Timer(500, TimeUnit.MILLISECONDS);
     private final NanoTimer timer;
 
     private Pose startPose;
@@ -64,7 +64,7 @@ public class ThreeWheelLocalizer extends Localizer {
      */
     public ThreeWheelLocalizer(HardwareMap hardwareMap, Pose setStartPose) {
         new OdometrySubsystem(hardwareMap).lower();
-        lastIMUread.start();
+        IMUcooldown.start();
 
         imu = hardwareMap.get(IMU.class, "imu_stable");
         imu.initialize(new IMU.Parameters(
@@ -176,7 +176,7 @@ public class ThreeWheelLocalizer extends Localizer {
         timer.resetTimer();
 
         if (useIMU) {
-            dashboard.addData("IMU updates in", Math.max(lastIMUread.remainingTime(), 0) + " ms");
+            dashboard.addData("IMU updates in", Math.max(IMUcooldown.remainingTime(), 0) + " ms");
             dashboard.update();
         }
 
@@ -207,10 +207,10 @@ public class ThreeWheelLocalizer extends Localizer {
 
         totalHeading += globalDeltas.get(2, 0);
 
-        if (useIMU && lastIMUread.done()) {
+        if (useIMU && IMUcooldown.done()) {
             double IMUHeading = MathFunctions.normalizeAngle(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
             displacementPose.setHeading(IMUHeading);
-            lastIMUread.start();
+            IMUcooldown.start();
         }
     }
 
