@@ -5,8 +5,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
 public enum AllianceColor {
     RED, BLUE;
 
-    // TODO: Find robot's starting pose
-    private final Pose startingPose = new Pose();
+    private final Pose startingPose = new Pose(7.5787401574803149606299212598425, 87.007874015748031496062992125984, Math.toRadians(0));
 
     public Pose convertPose(Pose pose) {
         if (this == BLUE)

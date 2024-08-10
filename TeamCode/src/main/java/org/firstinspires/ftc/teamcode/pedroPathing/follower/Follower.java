@@ -457,7 +457,7 @@ public class Follower {
                         motors.get(i).setPower(drivePowers[i]);
                     }
                 }
-                if (currentPath.isAtParametricEnd()) {
+                if (currentPath != null && currentPath.isAtParametricEnd()) {
                     if (followingPathChain && chainIndex < currentPathChain.size() - 1) {
                         // Not at last path, keep going
                         breakFollowing();
