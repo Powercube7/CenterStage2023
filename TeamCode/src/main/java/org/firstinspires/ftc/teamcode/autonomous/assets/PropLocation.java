@@ -9,9 +9,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 
 public enum PropLocation {
     // TODO: Find purple and yellow pixel poses
-    LEFT(new Pose(), new Pose()),
+    TRUSS_SIDE(new Pose(), new Pose()),
     MIDDLE(new Pose(34, 84, Math.toRadians(0)), new Pose(35, 120, Math.toRadians(-90))),
-    RIGHT(new Pose(33, 80, Math.toRadians(-45)), new Pose(42.25, 120, Math.toRadians(-90)));
+    BACKDROP_SIDE(new Pose(33, 80, Math.toRadians(-45)), new Pose(42.25, 120, Math.toRadians(-90)));
 
     private final Pose purplePose, yellowPose;
 
@@ -28,7 +28,7 @@ public enum PropLocation {
                 new Point(start),
                 new Point(end)
         ));
-        path.setLinearHeadingInterpolation(start.getHeading(), end.getHeading());
+        path.setLinearHeadingInterpolation(start.getHeading(), end.getHeading(), 0.9);
 
         return path;
     }

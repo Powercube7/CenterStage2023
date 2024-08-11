@@ -11,12 +11,15 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
+import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocation;
 import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commands.SensorDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
@@ -25,6 +28,7 @@ import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 @Autonomous
 public class TestAuto extends CommandOpMode {
     public static AllianceColor allianceColor = AllianceColor.BLUE;
+    public static PropLocation propLocation = PropLocation.BACKDROP_SIDE;
 
     public void initialize() {
         Follower follower = new Follower(hardwareMap);
@@ -34,21 +38,8 @@ public class TestAuto extends CommandOpMode {
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
         RevColorSensorV3 clawSensor = hardwareMap.get(RevColorSensorV3.class, "color_sensor");
 
-        PathChain purplePath = follower.pathBuilder()
-                .addPath(new BezierLine(
-                        new Point(allianceColor.getStartingPose()),
-                        new Point(34, 84, Point.CARTESIAN)
-                ))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .build();
-
-        PathChain yellowPath = follower.pathBuilder()
-                .addPath(new BezierLine(
-                        new Point(34, 84, Point.CARTESIAN),
-                        new Point(35, 120, Point.CARTESIAN)
-                ))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90), 0.9)
-                .build();
+        Path purplePath = propLocation.getPurplePath(allianceColor);
+        Path yellowPath = propLocation.getYellowPath(allianceColor);
 
         PathChain stackPath = follower.pathBuilder()
                 // goes to closest stack (middle truss)
@@ -57,12 +48,26 @@ public class TestAuto extends CommandOpMode {
 //                        new Point(32, 115, Point.CARTESIAN),
 //                        new Point(35, 13, Point.CARTESIAN)
 //                ))
-                .addPath(new BezierLine(
-                        new Point(35, 120, Point.CARTESIAN),
+//                .addPath(new BezierLine(
+//                        new Point(35, 120, Point.CARTESIAN),
+//                        new Point(35, 13, Point.CARTESIAN)
+//                ))
+
+                // goes wall side
+                .addPath(new BezierCurve(
+                        new Point(42.25, 120, Point.CARTESIAN),
+                        new Point(7.5, 111.25, Point.CARTESIAN),
+                        new Point(11, 37.50, Point.CARTESIAN)
+                ))
+                .setConstantHeadingInterpolation(Math.toRadians(-90))
+                .addPath(new BezierCurve(
+                        new Point(11, 37.50, Point.CARTESIAN),
+                        new Point(37.25, 30.5, Point.CARTESIAN),
                         new Point(35, 13, Point.CARTESIAN)
                 ))
                 .setConstantHeadingInterpolation(Math.toRadians(-90))
                 .build();
+
         PathChain backdropPath = follower.pathBuilder()
                 .addPath(new BezierLine(
                         new Point(35, 13, Point.CARTESIAN),
