@@ -9,7 +9,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 
 public enum PropLocation {
     // TODO: Find purple and yellow pixel poses
-    LEFT(new Pose(), new Pose()), MIDDLE(new Pose(), new Pose()), RIGHT(new Pose(), new Pose());
+    LEFT(new Pose(), new Pose()),
+    MIDDLE(new Pose(34, 84, Math.toRadians(0)), new Pose(35, 120, Math.toRadians(-90))),
+    RIGHT(new Pose(33, 80, Math.toRadians(-45)), new Pose(42.25, 120, Math.toRadians(-90)));
 
     private final Pose purplePose, yellowPose;
 

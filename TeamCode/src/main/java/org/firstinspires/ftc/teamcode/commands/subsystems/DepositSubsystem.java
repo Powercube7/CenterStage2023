@@ -25,7 +25,7 @@ public class DepositSubsystem extends SubsystemBase {
     private Blocker blockerState = Blocker.FREE;
     private boolean raisingSlides = false;
     private final ServoEx leftLift, rightLift;
-    public static Double HIGH_LEFT = .77, HIGH_RIGHT = .82;
+    public static Double HIGH_LEFT = .75, HIGH_RIGHT = .8;
     private final ServoEx stopperTop, stopperBottom;
     private BooleanSupplier safeToMove = () -> true;
 
@@ -162,14 +162,14 @@ public class DepositSubsystem extends SubsystemBase {
         }
     }
 
-    private void setStopperPositions(Blocker blockerState) {
+    public void setStopperPositions(Blocker blockerState) {
         stopperBottom.turnToAngle(blockerState.getBlockerPositions().first);
         stopperTop.turnToAngle(blockerState.getBlockerPositions().second);
 
         this.blockerState = blockerState;
     }
 
-    private enum Blocker {
+    public enum Blocker {
         TWO_PIXELS(108, 135), ONE_PIXEL(108, 90), FREE(60, 90);
 
         private final double bottomPos, topPos;

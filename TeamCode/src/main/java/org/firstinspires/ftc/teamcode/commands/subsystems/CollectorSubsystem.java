@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class CollectorSubsystem extends SubsystemBase {
-    public static Double LOWER_LIFT = 165.0, RAISE_LIFT = 10.0, STACK_LIFT = 140.0,
+    public static Double LOWER_LIFT = 165.0, RAISE_LIFT = 7.0, STACK_LIFT = 142.5,
                          OPEN_CLAW = 40.0, CLOSE_CLAW = 70.0, OPEN_LIFT_CLAW  = 50.0;
     private final ServoEx claw;
     private final InterpolatedServo left, right;
@@ -62,9 +62,6 @@ public class CollectorSubsystem extends SubsystemBase {
     }
 
     public void setLiftLocation(LiftState target) {
-        if (target == location)
-            return;
-
         // Claw needs to be closed to avoid hitting the belts
         if (clamping == ClampState.OPENED && (target == LiftState.RAISED || location == LiftState.RAISED))
             toggleClamp();

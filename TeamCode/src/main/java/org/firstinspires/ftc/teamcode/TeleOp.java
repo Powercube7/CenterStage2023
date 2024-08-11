@@ -95,7 +95,7 @@ public class TeleOp extends CommandOpMode {
         driver2.getGamepadButton(GamepadKeys.Button.B)
                 .whenPressed(outtake::toggleBlockers);
         rightTrigger.toggleWhenActive(
-                () -> outtake.setSpikePosition(.925),
+                () -> outtake.setSpikePosition(.875),
                 () -> outtake.setSpikePosition(DepositSubsystem.HIGH_RIGHT)
         );
 
