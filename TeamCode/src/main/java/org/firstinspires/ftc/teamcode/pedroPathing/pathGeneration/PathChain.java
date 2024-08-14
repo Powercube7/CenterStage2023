@@ -54,6 +54,10 @@ public class PathChain {
         return pathChain.get(index);
     }
 
+    public Path getLastPath() {
+        return pathChain.get(pathChain.size() - 1);
+    }
+
     /**
      * This returns the size of the PathChain.
      *
