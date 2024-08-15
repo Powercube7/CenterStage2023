@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelRaceGroup;
@@ -11,22 +9,22 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.autonomous.assets.AllianceColor;
 import org.firstinspires.ftc.teamcode.autonomous.assets.PropLocation;
+import org.firstinspires.ftc.teamcode.autonomous.assets.StackGenerator;
 import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commands.SensorDetectionCommand;
 import org.firstinspires.ftc.teamcode.commands.subsystems.CollectorSubsystem;
 import org.firstinspires.ftc.teamcode.commands.subsystems.DepositSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
-import org.firstinspires.ftc.teamcode.pedroPathing.util.Drawing;
 import org.firstinspires.ftc.teamcode.util.FixedSequentialCommandGroup;
 
+@Disabled
 @Config
 @Autonomous
 public class TestAuto extends CommandOpMode {
@@ -37,7 +35,10 @@ public class TestAuto extends CommandOpMode {
     public void initialize() {
         Follower follower = new Follower(hardwareMap);
         follower.setStartingPose(allianceColor.getStartingPose());
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        StackGenerator stackPaths = new StackGenerator(stackPoint, backdropPoint)
+                .setAlliance(allianceColor)
+                .setFollower(follower);
 
         CollectorSubsystem intake = new CollectorSubsystem(hardwareMap);
         DepositSubsystem outtake = new DepositSubsystem(hardwareMap);
@@ -47,93 +48,12 @@ public class TestAuto extends CommandOpMode {
         Path purplePath = propLocation.getPurplePath(allianceColor);
         Path yellowPath = propLocation.getYellowPath(allianceColor);
 
-        PathChain firstStackPath = follower.pathBuilder()
-                // goes wall side
-                .addPath(new BezierCurve(
-                        yellowPath.getLastControlPoint(),
-                        new Point(4.25, 112.25, Point.CARTESIAN),
-                        new Point(13, 35.25, Point.CARTESIAN)
-                ))
-                .addParametricCallback(0.66, () -> follower.setMaxPower(0.7))
-                .setPathEndTValueConstraint(0.9)
-                .setTangentHeadingInterpolation()
-
-                .addPath(new BezierCurve(
-                        new Point(13, 35.25, Point.CARTESIAN),
-                        new Point(36, 35, Point.CARTESIAN),
-                        stackPoint
-                ))
-                .addParametricCallback(0.99, () -> follower.setMaxPower(1.0))
-                .setConstantHeadingInterpolation(Math.toRadians(-90))
-//                .addPath(new BezierLine(
-//                        new Point(13, 35.25, Point.CARTESIAN),
-//                        new Point(35, 24, Point.CARTESIAN)
-//                ))
-//                .setConstantHeadingInterpolation(Math.toRadians(-90))
-//
-//                .addPath(new BezierLine(
-//                        new Point(35, 24, Point.CARTESIAN),
-//                        new Point(35, 12, Point.CARTESIAN)
-//                ))
-//                .addParametricCallback(0.99, () -> follower.setMaxPower(1.0))
-//                .setConstantHeadingInterpolation(Math.toRadians(-90))
-//                .setTangentHeadingInterpolation()
-                .build();
-
-        PathChain backdropPath = follower.pathBuilder()
-//                .addPath(new BezierCurve(
-//                        new Point(36, 12, Point.CARTESIAN),
-//                        new Point(34, 120, Point.CARTESIAN)
-//                ))
-                .addPath(new BezierCurve(
-                        firstStackPath.getLastPath().getLastControlPoint(),
-                        new Point(3.5, 11, Point.CARTESIAN),
-                        new Point(2, 100, Point.CARTESIAN),
-                        backdropPoint
-                ))
-                .addParametricCallback(0.1, () -> follower.setMaxPower(1.0))
-                .setConstantHeadingInterpolation(Math.toRadians(-90))
-                .build();
-
-        PathChain secondStackPath = follower.pathBuilder()
-                // goes wall side
-                .addPath(new BezierCurve(
-                        backdropPoint,
-                        new Point(4.25, 112.25, Point.CARTESIAN),
-                        new Point(13, 35.25, Point.CARTESIAN)
-                ))
-                .addParametricCallback(0.66, () -> follower.setMaxPower(0.7))
-                .setPathEndTValueConstraint(0.9)
-                .setTangentHeadingInterpolation()
-
-                .addPath(new BezierCurve(
-                        new Point(13, 35.25, Point.CARTESIAN),
-                        new Point(36, 35, Point.CARTESIAN),
-                        stackPoint
-                ))
-                .addParametricCallback(0.99, () -> follower.setMaxPower(1.0))
-                .setConstantHeadingInterpolation(Math.toRadians(-90))
-
-//                .addPath(new BezierLine(
-//                        new Point(13, 35.25, Point.CARTESIAN),
-//                        new Point(35, 24, Point.CARTESIAN)
-//                ))
-//                .setConstantHeadingInterpolation(Math.toRadians(-90))
-//
-//                .addPath(new BezierLine(
-//                        new Point(35, 24, Point.CARTESIAN),
-//                        new Point(35, 12, Point.CARTESIAN)
-//                ))
-//                .addParametricCallback(0.99, () -> follower.setMaxPower(1.0))
-//                .setConstantHeadingInterpolation(Math.toRadians(-90))
-                .build();
+        PathChain firstStackPath = stackPaths.getStackPath(yellowPath.getLastControlPoint(), StackGenerator.Route.WALL_TRUSS);
+        PathChain secondStackPath = stackPaths.getStackPath(backdropPoint, StackGenerator.Route.WALL_TRUSS);
+        PathChain backdropPath = stackPaths.getBackdropPath(StackGenerator.Route.WALL_TRUSS);
 
         schedule(
-                new RunCommand(() -> {
-                    follower.update();
-                    follower.telemetryDebug(telemetry);
-                    Drawing.drawDebug(follower);
-                }),
+                new RunCommand(follower::update),
                 new FixedSequentialCommandGroup(
                         new WaitUntilCommand(this::opModeIsActive),
 
@@ -171,7 +91,7 @@ public class TestAuto extends CommandOpMode {
                         new ParallelRaceGroup(
                                 new FollowPathCommand(follower, firstStackPath),
                                 new FixedSequentialCommandGroup(
-                                        new WaitUntilCommand(() -> follower.getPose().getY() < 20),
+                                        new WaitUntilCommand(() -> follower.getPose().getY() < 24),
                                         new SensorDetectionCommand(clawSensor)
                                                 .withTimeout(3000)
                                 )
@@ -217,7 +137,7 @@ public class TestAuto extends CommandOpMode {
                         new ParallelRaceGroup(
                                 new FollowPathCommand(follower, secondStackPath),
                                 new FixedSequentialCommandGroup(
-                                        new WaitUntilCommand(() -> follower.getPose().getY() < 20),
+                                        new WaitUntilCommand(() -> follower.getPose().getY() < 24),
                                         new SensorDetectionCommand(clawSensor)
                                                 .withTimeout(3000)
                                 )
@@ -250,7 +170,7 @@ public class TestAuto extends CommandOpMode {
                                         new InstantCommand(outtake::toggleSpike),
                                         new WaitCommand(200),
                                         new InstantCommand(outtake::toggleSpike),
-                                        new WaitCommand(300)
+                                        new WaitCommand(200)
                                 ),
                         new InstantCommand(() -> outtake.setStopperPositions(DepositSubsystem.Blocker.FREE))
                                 .andThen(

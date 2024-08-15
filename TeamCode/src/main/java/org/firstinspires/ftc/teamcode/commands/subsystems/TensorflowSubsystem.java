@@ -42,8 +42,10 @@ public class TensorflowSubsystem extends SubsystemBase {
     }
 
     public void shutdown() {
-        tensorflowProcessor.shutdown();
-        portal.close();
+        if (portal.getCameraState() != VisionPortal.CameraState.CAMERA_DEVICE_CLOSED) {
+            tensorflowProcessor.shutdown();
+            portal.close();
+        }
     }
 
     public void setMinConfidence(double confidence) {

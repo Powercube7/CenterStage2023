@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.assets;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
+import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 
 public enum AllianceColor {
     RED, BLUE;
@@ -12,6 +13,10 @@ public enum AllianceColor {
             return pose;
         else
             return new Pose(144 - pose.getX(), pose.getY(), Math.PI - pose.getHeading());
+    }
+
+    public Point convertPoint(Point point) {
+        return this == BLUE ? point : new Point(144 - point.getX(), point.getY(), Point.CARTESIAN);
     }
 
     public Pose getStartingPose() {
